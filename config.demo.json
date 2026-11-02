@@ -1,0 +1,30 @@
+{
+  "box_name": "Pos Jaga Siber (demo)",
+  "unit": "Markas contoh · lab virtual",
+  "operator": "Serda Contoh",
+  "data_dir": "data-demo",
+  "eve_path": "data-demo/eve.json",
+  "web": {"host": "127.0.0.1", "port": 8080},
+  "networks": {"ot": ["10.20.0.0/24"], "it": ["10.10.0.0/24"]},
+  "devices": [
+    {"ip": "10.10.0.1", "name": "Router MikroTik", "kind": "router"},
+    {"ip": "10.10.0.2", "name": "Kotak Pos Jaga", "kind": "sensor"},
+    {"ip": "10.10.0.10", "name": "Server berkas", "kind": "server"},
+    {"ip": "10.10.0.21", "name": "Laptop Staf Personel", "kind": "laptop"},
+    {"ip": "10.10.0.22", "name": "Laptop Staf Logistik", "kind": "laptop"},
+    {"ip": "10.10.0.23", "name": "Laptop Staf Operasi", "kind": "laptop"},
+    {"ip": "10.20.0.1", "name": "Router MikroTik (sisi peralatan)", "kind": "router"},
+    {"ip": "10.20.0.5", "name": "PC Pengendali Peralatan", "kind": "pengendali"},
+    {"ip": "10.20.0.10", "name": "Genset utama", "kind": "genset"},
+    {"ip": "10.20.0.21", "name": "Kamera Gerbang Utama", "kind": "kamera"},
+    {"ip": "10.20.0.22", "name": "Kamera Gudang", "kind": "kamera"},
+    {"ip": "10.20.0.30", "name": "Perekam CCTV (NVR)", "kind": "perekam"},
+    {"ip": "10.20.0.40", "name": "Kunci Pintu Gudang Senjata", "kind": "pintu"}
+  ],
+  "never_isolate": ["10.10.0.1", "10.20.0.1", "10.10.0.2"],
+  "router_macs": ["08:00:27:aa:00:01", "08:00:27:aa:00:02"],
+  "learning_hours": 0,
+  "beacon": {"min_count": 6, "min_interval_s": 1, "max_interval_s": 3600, "max_jitter": 0.35},
+  "mikrotik": {"enabled": false},
+  "ollama": {"enabled": true, "model": "qwen2.5:1.5b"}
+}

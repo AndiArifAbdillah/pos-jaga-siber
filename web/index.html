@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pos Jaga Siber</title>
+<link rel="stylesheet" href="gaya.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="mark" aria-hidden="true">PJS</div>
+    <div>
+      <div class="brand-name">POS JAGA SIBER</div>
+      <div class="brand-unit" id="unit">Memuat...</div>
+    </div>
+  </div>
+  <div class="chips">
+    <span class="chip chip-ok">Mandiri &middot; tetap berjalan tanpa internet</span>
+    <span class="chip" id="chip-bukti">Catatan bukti: memeriksa</span>
+    <span class="chip" id="chip-blokir">Blokir: -</span>
+    <span class="chip" id="chip-ai">AI: -</span>
+  </div>
+  <div class="who">
+    <div class="clock" id="clock">-</div>
+    <label class="operator">Operator <input id="operator" maxlength="60" autocomplete="off" spellcheck="false"></label>
+  </div>
+</header>
+
+<div id="banner" class="banner" role="alert" hidden></div>
+<div id="learning" class="learning" hidden></div>
+
+<section class="tiles" aria-label="Ringkasan">
+  <div class="tile" id="tile-need">
+    <div class="tile-label">Perlu keputusan Anda</div>
+    <div class="tile-value" id="need-count">0</div>
+    <div class="tile-sub" id="need-sub">-</div>
+  </div>
+  <div class="tile">
+    <div class="tile-label">Diisolasi saat ini</div>
+    <div class="tile-value" id="iso-count">0</div>
+    <div class="tile-sub" id="iso-sub">-</div>
+  </div>
+  <div class="tile">
+    <div class="tile-label">Perangkat dipantau</div>
+    <div class="tile-value" id="dev-count">0</div>
+    <div class="tile-sub" id="dev-sub">-</div>
+  </div>
+  <div class="tile" id="tile-ev">
+    <div class="tile-label">Catatan bukti</div>
+    <div class="tile-value" id="ev-count">0</div>
+    <div class="tile-sub" id="ev-sub">-</div>
+  </div>
+</section>
+
+<main class="grid">
+  <section class="panel list-panel" aria-label="Daftar kejadian">
+    <div class="panel-head"><h2>Kejadian</h2><span class="muted" id="list-meta"></span></div>
+    <div id="incident-list" class="incident-list"></div>
+  </section>
+
+  <section class="panel detail-panel" id="detail" aria-label="Rincian kejadian" aria-live="polite"></section>
+
+  <aside class="side">
+    <section class="panel">
+      <div class="panel-head"><h2>Peralatan (OT)</h2><span class="muted" id="ot-meta"></span></div>
+      <ul id="dev-ot" class="devs"></ul>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h2>Komputer (IT)</h2><span class="muted" id="it-meta"></span></div>
+      <ul id="dev-it" class="devs"></ul>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h2>Catatan bukti</h2></div>
+      <div class="code-box">
+        <div class="code-label">Kode buku jaga</div>
+        <div class="code" id="book-code">----</div>
+        <div class="code-help">Salin ke buku jaga kertas setiap ganti piket.</div>
+      </div>
+      <div class="integrity" id="integrity">-</div>
+      <button class="btn btn-wide" id="btn-check" type="button">Periksa sekarang</button>
+      <ol class="entries" id="entries"></ol>
+    </section>
+  </aside>
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="aplikasi.js"></script>
+</body>
+</html>

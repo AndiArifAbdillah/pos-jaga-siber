@@ -1,0 +1,18 @@
+# Data yang dibuat saat kotak berjalan (bisa berisi data jaringan dan kunci rahasia)
+data/
+data-demo/
+*.key
+*.cadangan
+config.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editor dan sistem
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,38 @@
+# Bagian suricata.yaml yang perlu disesuaikan untuk Pos Jaga Siber.
+# Ini BUKAN berkas lengkap. Cari bagian yang sama di /etc/suricata/suricata.yaml
+# lalu ubah nilainya. Langkah lengkap: docs/PANDUAN-LAB.md
+
+vars:
+  address-groups:
+    HOME_NET: "[10.10.0.0/24,10.20.0.0/24]"
+    EXTERNAL_NET: "!$HOME_NET"
+    PJS_OT_NET: "[10.20.0.0/24]"          # seluruh jaringan peralatan
+    PJS_OT: "[10.20.0.0/24]"              # peralatan yang dijaga (boleh daftar alamat)
+    PJS_PENGENDALI_OT: "[10.20.0.5]"      # komputer yang SAH memberi perintah ke peralatan
+
+# Modbus mati secara bawaan di Suricata. Nyalakan:
+app-layer:
+  protocols:
+    modbus:
+      enabled: yes
+      detection-ports:
+        dp: 502
+
+# Kartu jaringan yang didengarkan (dua jaringan: kantor dan peralatan).
+af-packet:
+  - interface: enp0s8
+    cluster-id: 98
+    cluster-type: cluster_flow
+  - interface: enp0s9
+    cluster-id: 99
+    cluster-type: cluster_flow
+
+# Di bagian outputs -> eve-log, pastikan:
+#   filename: eve.json
+#   ethernet: yes          # supaya alamat MAC ikut tercatat
+#   types: alert, flow, dns, tls, http, modbus (minimal alert dan flow)
+
+# Daftarkan berkas aturan PJS:
+rule-files:
+  - suricata.rules
+  - /etc/suricata/rules/pjs-ot.rules

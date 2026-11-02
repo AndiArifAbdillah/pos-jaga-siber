@@ -1,0 +1,16 @@
+# Aturan khusus Pos Jaga Siber untuk peralatan (OT).
+# Variabel $PJS_OT_NET, $PJS_OT, dan $PJS_PENGENDALI_OT diatur di suricata.yaml
+# (lihat aturan/suricata-tambahan.yaml). Metadata pjs_jenis dan pjs_tingkat
+# dibaca kotak untuk menentukan jenis kejadian dan tingkat bahayanya.
+# Penjelasan baris demi baris: docs/belajar/04-suricata.md
+
+# 1. Perintah TULIS Modbus ke peralatan dari perangkat yang bukan pengendali resmi.
+#    Contoh: laptop asing mengirim perintah mematikan genset. Tingkat: kritis.
+alert modbus !$PJS_PENGENDALI_OT any -> $PJS_OT any (msg:"PJS OT perintah tulis Modbus dari perangkat yang bukan pengendali"; flow:to_server,established; modbus: access write; classtype:attempted-admin; metadata:pjs_jenis ot_tulis, pjs_tingkat kritis; sid:1990001; rev:1;)
+
+# 2. Pembacaan Modbus dari luar jaringan peralatan (mengintip sebelum menyerang).
+#    Dibatasi satu peringatan per 5 menit per pengirim supaya tidak banjir.
+alert modbus !$PJS_OT_NET any -> $PJS_OT any (msg:"PJS OT pembacaan Modbus dari luar jaringan peralatan"; flow:to_server,established; modbus: access read; threshold:type limit, track by_src, count 1, seconds 300; classtype:attempted-recon; metadata:pjs_jenis ot_baca_luar, pjs_tingkat tinggi; sid:1990002; rev:1;)
+
+# 3. Percobaan membuka Telnet ke peralatan (banyak kamera/DVR murah masih memakainya).
+alert tcp any any -> $PJS_OT [23,2323] (msg:"PJS OT percobaan masuk Telnet ke peralatan"; flow:to_server; flags:S; threshold:type limit, track by_src, count 1, seconds 300; classtype:attempted-admin; metadata:pjs_jenis ot_telnet, pjs_tingkat tinggi; sid:1990003; rev:1;)

@@ -1,0 +1,29 @@
+{
+  "box_name": "Pos Jaga Siber",
+  "unit": "Nama satuan Anda",
+  "operator": "Operator jaga",
+  "data_dir": "/var/lib/pjs",
+  "eve_path": "/var/log/suricata/eve.json",
+  "web": {"host": "10.10.0.2", "port": 8080},
+  "networks": {"ot": ["10.20.0.0/24"], "it": ["10.10.0.0/24"], "other": []},
+  "devices": [
+    {"ip": "10.10.0.1", "name": "Router MikroTik", "kind": "router"},
+    {"ip": "10.10.0.2", "name": "Kotak Pos Jaga", "kind": "sensor"},
+    {"ip": "10.20.0.5", "name": "PC Pengendali Peralatan", "kind": "pengendali"},
+    {"ip": "10.20.0.10", "name": "Genset utama", "kind": "genset"}
+  ],
+  "never_isolate": ["10.10.0.1", "10.20.0.1", "10.10.0.2"],
+  "router_macs": [],
+  "learning_hours": 336,
+  "auto_isolate": true,
+  "mikrotik": {
+    "enabled": true,
+    "host": "10.10.0.1",
+    "port": 8728,
+    "user": "pjs",
+    "password": "GANTI-DENGAN-SANDI-AKUN-PJS",
+    "address_list": "pjs-karantina",
+    "timeout": "24h"
+  },
+  "ollama": {"enabled": true, "url": "http://127.0.0.1:11434", "model": "qwen2.5:1.5b"}
+}
