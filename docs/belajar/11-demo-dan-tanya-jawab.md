@@ -1,5 +1,7 @@
 # 11 · Demo dan tanya jawab
 
+Bab ini berisi **apa yang diucapkan**. **Apa yang diketik dan diklik**, lengkap dengan gambar, ada di [CARA-DEMO.md](../CARA-DEMO.md).
+
 ## 1. Kalimat inti
 
 Pakai kalimat yang sama di slide, video, dan presentasi:

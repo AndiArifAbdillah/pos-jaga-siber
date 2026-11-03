@@ -78,7 +78,7 @@ Alur yang disarankan (sekitar 9 menit):
 | 7:30–8:30 | Arsitektur, teknologi, dan pagar pengaman AI |
 | 8:30–9:15 | Kelayakan: biaya per kotak, pemasangan bertahap, rencana lanjutan. Penutup dengan kalimat inti |
 
-Naskah lengkap setiap skenario ada di [belajar/11-demo-dan-tanya-jawab.md](belajar/11-demo-dan-tanya-jawab.md).
+Naskah lengkap setiap skenario ada di [belajar/11-demo-dan-tanya-jawab.md](belajar/11-demo-dan-tanya-jawab.md). Cara menyiapkan layar, perintah, dan merekam ada di [CARA-DEMO.md](CARA-DEMO.md). Gambar di [gambar/](gambar/) bisa dipakai sebagai bahan screenshot pengumpulan.
 
 ### 5. Slide penjelasan
 

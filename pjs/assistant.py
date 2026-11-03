@@ -67,7 +67,9 @@ class ShiftAssistant:
     def _device_line(self, device, isolated):
         name = device["name"] or self.app.detector.device_name(device["ip"])
         seen = _stamp(device["last_seen"]) if device["last_seen"] else "belum terlihat"
-        status = "DIISOLASI" if device["ip"] in isolated else "normal"
+        # Hanya status sambungan jaringan. Kotak tidak tahu keadaan fisik perangkat,
+        # jadi jangan menulis "normal" yang bisa dibaca AI sebagai "genset baik-baik saja".
+        status = "sedang diisolasi dari jaringan" if device["ip"] in isolated else "tidak diisolasi"
         return f"{name} | {device['ip']} | jaringan {ZONE_LABEL.get(device['zone'], 'luar')} | terakhir terlihat {seen} | {status}"
 
     def retrieve(self, question, limit=8):
@@ -151,7 +153,7 @@ Waktu sekarang: {_stamp(time.time())}
 DATA KEJADIAN (nomor | waktu | tingkat | status | judul | dari-ke | jumlah | penjelasan):
 {data}
 
-DATA PERANGKAT (nama | alamat | jaringan | terakhir terlihat | status):
+DATA PERANGKAT (nama | alamat | jaringan | terakhir terlihat | status isolasi). Kotak tidak tahu keadaan fisik perangkat:
 {dev}
 
 PERTANYAAN PETUGAS: {question}

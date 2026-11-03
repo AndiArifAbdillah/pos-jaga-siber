@@ -206,6 +206,7 @@ Hasil yang benar diakhiri dengan `OK`.
 
 ## Langkah berikutnya
 
+- Cara memperagakan demo di depan juri, lengkap dengan gambar: [CARA-DEMO.md](CARA-DEMO.md)
 - Pahami cara kerjanya dari nol: [belajar/00-mulai-di-sini.md](belajar/00-mulai-di-sini.md)
 - Susun lab lengkap dengan Suricata dan MikroTik: [PANDUAN-LAB.md](PANDUAN-LAB.md)
 - Pembagian kerja dan jadwal: [PEMBAGIAN-KERJA.md](PEMBAGIAN-KERJA.md)

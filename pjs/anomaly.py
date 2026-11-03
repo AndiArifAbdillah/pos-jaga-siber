@@ -271,7 +271,7 @@ class BehaviorWatcher:
         if rare_hour:
             phrases.append(f"aktif pada jam {int(feats.get('hour', 0)):02d}.00 yang hampir tidak pernah dipakai")
         if not phrases:
-            return "gabungan kegiatannya tidak cocok dengan kebiasaan perangkat di jaringan ini"
+            return "menunjukkan gabungan kegiatan yang tidak cocok dengan kebiasaan perangkat di jaringan ini"
         if len(phrases) == 1:
             return phrases[0]
         return ", ".join(phrases[:-1]) + ", dan " + phrases[-1]

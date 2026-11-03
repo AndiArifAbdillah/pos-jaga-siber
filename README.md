@@ -48,7 +48,9 @@ python lab/ubah_catatan.py
 
 Lalu tekan **Periksa sekarang** di dashboard. Layar berubah merah dan menunjukkan entri mana yang hilang.
 
-Panduan lengkap langkah demi langkah, termasuk mode rekam video, AI lokal, dan jalan keluar kalau ada masalah: [docs/CARA-MENJALANKAN.md](docs/CARA-MENJALANKAN.md).
+Panduan lengkap langkah demi langkah, termasuk mode rekam video, AI lokal, dan jalan keluar kalau ada masalah: [docs/CARA-MENJALANKAN.md](docs/CARA-MENJALANKAN.md). Cara memperagakannya di depan juri, lengkap dengan gambar: [docs/CARA-DEMO.md](docs/CARA-DEMO.md).
+
+![Dashboard Pos Jaga Siber: kejadian genset diisolasi otomatis dan dijelaskan AI lokal](docs/gambar/01-dashboard-genset.jpg)
 
 ## Cara kerja singkat
 
@@ -79,6 +81,7 @@ Penjelasan lengkap dari nol ada di [docs/belajar](docs/belajar/00-mulai-di-sini.
 | `tests/` | Tes otomatis |
 | `docs/belajar/` | Dokumen belajar dari dasar sampai paham seluruh proyek |
 | `docs/CARA-MENJALANKAN.md` | Cara menjalankan proyek di laptop biasa, langkah demi langkah |
+| `docs/CARA-DEMO.md` | Cara memperagakan demo (laptop dan lab), dengan gambar dan kalimat yang diucapkan |
 | `docs/PANDUAN-LAB.md` | Langkah menyusun lab virtual di satu laptop |
 | `docs/PEMBAGIAN-KERJA.md` | Pembagian kerja tim 3 orang sampai 14 November |
 | `docs/PENGUMPULAN-KARYA.md` | Lima berkas wajib menurut rulebook dan daftar periksa sebelum mengumpulkan |

@@ -74,6 +74,7 @@ class App:
             "ai": self.explainer.state, "signer": self.evidence.signer.backend,
             "ai_perilaku": self.detector.watcher.status(self.detector.learning_active())["state"],
         })
+        self.check_integrity(record=False)
         self.tailer.start()
         threading.Thread(target=self._integrity_loop, name="pemeriksa-rantai", daemon=True).start()
         threading.Thread(target=self._behavior_loop, name="penilai-perilaku", daemon=True).start()
@@ -92,7 +93,7 @@ class App:
 
     def _integrity_loop(self):
         while True:
-            time.sleep(300)
+            time.sleep(60)
             self.check_integrity(record=False)
 
     def check_integrity(self, record=True, operator=None):
