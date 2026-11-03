@@ -43,7 +43,7 @@ Bab yang bukan bagianmu tetap layak dibaca sekilas. Di depan juri, kalian berdua
    python -m pjs demo --putar --baru
    ```
 
-   Buka http://localhost:8080 dan lihat apa yang terjadi. Setiap bab akan menjelaskan satu bagian dari yang kamu lihat.
+   Buka http://localhost:8080 dan lihat apa yang terjadi. Setiap bab akan menjelaskan satu bagian dari yang kamu lihat. Kalau ada yang macet, ikuti [CARA-MENJALANKAN.md](../CARA-MENJALANKAN.md).
 
 2. **Kerjakan latihan di akhir bab.** Setiap bab punya latihan kecil. Jangan dilewati: pemahaman datang dari mencoba.
 
