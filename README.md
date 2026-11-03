@@ -139,3 +139,9 @@ Karya ini dibuat selama periode Kartika Cyber Hackathon 2026. Komponen pihak ket
 | VirtualBox | Oracle | Lab virtual |
 
 Kode dan dokumentasi dikembangkan dengan bantuan asisten AI (Claude, buatan Anthropic).
+
+## Lisensi
+
+**Hak Cipta Dilindungi.** Hak Cipta (c) 2026 Andi Arif Abdillah, Fairuz Akhdan, dan Aditya Maulana Pamungkas.
+
+Penyelenggara dan Dewan Juri Kartika Cyber Hackathon 2026 boleh menjalankan, menguji, dan mempublikasikan karya ini sesuai Syarat dan Ketentuan lomba. Siapa pun boleh membacanya untuk belajar. Menyalin, mengubah, atau memakainya untuk keperluan lain butuh izin tertulis. Ketentuan lengkap ada di [LICENSE](LICENSE).
