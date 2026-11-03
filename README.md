@@ -68,7 +68,7 @@ Penjelasan lengkap dari nol ada di [docs/belajar](docs/belajar/00-mulai-di-sini.
 | `tests/` | Tes otomatis |
 | `docs/belajar/` | Dokumen belajar dari dasar sampai paham seluruh proyek |
 | `docs/PANDUAN-LAB.md` | Langkah menyusun lab virtual di satu laptop |
-| `docs/PEMBAGIAN-KERJA.md` | Pembagian kerja tim 3 orang sampai 14 November |
+| `docs/PEMBAGIAN-KERJA.md` | Pembagian kerja tim 2 orang sampai 14 November |
 | `config.demo.json` | Konfigurasi demo (tanpa Suricata, tanpa MikroTik) |
 | `config.contoh.json` | Contoh konfigurasi untuk kotak sungguhan |
 
