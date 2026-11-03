@@ -189,6 +189,38 @@ sudo python3 lab/penerima.py --port 80
 
 Untuk skenario 1, sebelum menyerang, cek dulu di MikroTik: `/ip firewall address-list print`. Sesudah serangan, alamat 10.10.0.66 muncul di daftar `pjs-karantina` dengan sisa waktu 24 jam.
 
+## 8b. AI deteksi perilaku di lab (skenario 5)
+
+AI deteksi perilaku perlu belajar kebiasaan normal lab lebih dulu. Ada dua pilihan:
+
+**Pilihan 1 (disarankan): belajar dari lalu lintas lab sungguhan.**
+
+1. Di `config.json`, setel `"learning_hours": 1` dan `"anomaly": {"window_s": 60}`.
+2. Hapus folder data kotak (`/var/lib/pjs`) supaya masa belajar dimulai dari awal, lalu jalankan kotak.
+3. Selama 1 jam, buat lalu lintas normal:
+
+   ```bash
+   # di VM genset (alamat pengendali 10.20.0.5 ditambahkan dulu)
+   sudo ip addr add 10.20.0.5/24 dev enp0s3
+   python3 lab/pengendali_tiruan.py --genset 10.20.0.10 --dari 10.20.0.5 --jeda 5
+   # di VM klien, kegiatan kantor biasa ke "internet"
+   python3 lab/kirim_berkala.py --tujuan 203.0.113.50 --dari 10.10.0.23 --jeda 7 --acak 0.8 --jumlah 600
+   ```
+
+   `--acak 0.8` membuat jedanya tidak teratur. Tanpa itu, kotak akan (dengan benar) menganggapnya sinyal berkala. Satu rentang 60 detik per perangkat per jaringan menghasilkan satu contoh. Model butuh 200 contoh per jaringan, jadi tambah perangkat atau perpanjang waktu belajar kalau kurang. Tanda di dashboard: "AI perilaku: belajar (… contoh)", lalu "aktif".
+
+**Pilihan 2 (cepat, untuk latihan): pakai contoh demo.** Setel `"anomaly": {"window_s": 10, "seed_file": "lab/contoh_riwayat_normal.jsonl"}`. Contoh ini buatan dan belum tentu cocok dengan lalu lintas lab, jadi bisa muncul alarm palsu.
+
+Setelah AI aktif, jalankan skenario 5:
+
+```bash
+# di VM genset, alamat kunci pintu ditambahkan dulu
+sudo ip addr add 10.20.0.40/24 dev enp0s3
+python3 lab/pindai_tiruan.py --jaringan 10.20.0 --dari 10.20.0.40
+```
+
+Yang harus terlihat: kejadian "Perilaku tidak biasa: Kunci Pintu Gudang Senjata" dengan skor keanehan dan alasannya, paling lambat satu rentang waktu setelah pemindaian.
+
 ## 9. Masalah yang sering muncul
 
 | Gejala | Kemungkinan penyebab dan jalan keluar |

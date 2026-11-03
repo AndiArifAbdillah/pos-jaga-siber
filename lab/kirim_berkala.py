@@ -16,6 +16,7 @@ Contoh:
 import argparse
 import http.client
 import os
+import random
 import time
 
 
@@ -27,6 +28,8 @@ def main():
     parser.add_argument("--jumlah", type=int, default=10)
     parser.add_argument("--ukuran", type=int, default=0, help="byte data yang dikirim (0 = hanya permintaan biasa)")
     parser.add_argument("--dari", help="alamat asal (kalau VM punya lebih dari satu alamat)")
+    parser.add_argument("--acak", type=float, default=0.0,
+                        help="variasi jeda, misalnya 0.8 = jeda acak 20%%-180%%. Pakai untuk lalu lintas normal, supaya tidak dianggap sinyal berkala")
     args = parser.parse_args()
 
     body = os.urandom(args.ukuran) if args.ukuran else None
@@ -43,7 +46,7 @@ def main():
         finally:
             conn.close()
         if n < args.jumlah:
-            time.sleep(args.jeda)
+            time.sleep(args.jeda * random.uniform(1 - args.acak, 1 + args.acak))
 
 
 if __name__ == "__main__":

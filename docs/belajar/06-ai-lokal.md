@@ -1,6 +1,8 @@
 # 06 · AI lokal: "mulut" kotak
 
-Petugas jaga bukan ahli komputer. Pesan seperti `PJS OT perintah tulis Modbus dari perangkat yang bukan pengendali` tidak berarti apa-apa bagi mereka. Tugas AI di kotak ini satu saja: **menerjemahkan kejadian teknis menjadi bahasa sehari-hari.**
+Petugas jaga bukan ahli komputer. Pesan seperti `PJS OT perintah tulis Modbus dari perangkat yang bukan pengendali` tidak berarti apa-apa bagi mereka. Bab ini membahas tugas pertama model bahasa di kotak: **menerjemahkan kejadian teknis menjadi bahasa sehari-hari.**
+
+Kotak memakai AI di tiga tempat: penjelas (bab ini), AI deteksi perilaku dengan machine learning, dan asisten piket. Dua yang terakhir dibahas di [bab 13](13-ai-deteksi-perilaku-dan-asisten.md).
 
 ## 1. Apa itu model bahasa (LLM)
 

@@ -25,6 +25,7 @@
   "router_macs": ["08:00:27:aa:00:01", "08:00:27:aa:00:02"],
   "learning_hours": 0,
   "beacon": {"min_count": 6, "min_interval_s": 1, "max_interval_s": 3600, "max_jitter": 0.35},
+  "anomaly": {"window_s": 10, "seed_file": "lab/contoh_riwayat_normal.jsonl"},
   "mikrotik": {"enabled": false},
   "ollama": {"enabled": true, "model": "qwen2.5:1.5b"}
 }

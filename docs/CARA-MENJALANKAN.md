@@ -63,22 +63,26 @@ Pos Jaga Siber berjalan. Buka http://localhost:8080
 
 ## 4. Membuka dashboard
 
-Buka browser ke **http://localhost:8080**. Dalam sekitar 40 detik, tiga kejadian muncul:
+Buka browser ke **http://localhost:8080**. Dalam sekitar 1 menit, kejadian-kejadian ini muncul:
 
-| Kejadian | Tingkat | Yang dilakukan kotak |
-|---|---|---|
-| Perintah asing ke Genset utama | Kritis | Langsung diisolasi otomatis |
-| Kamera Gerbang Utama mengirim data ke luar markas | Tinggi | Menunggu keputusan petugas |
-| Laptop Staf Operasi menghubungi alamat luar secara teratur | Tinggi | Menunggu keputusan petugas |
+| Kejadian | Tingkat | Ditemukan oleh | Yang dilakukan kotak |
+|---|---|---|---|
+| Perintah asing ke Genset utama | Kritis | Aturan Suricata | Langsung diisolasi otomatis |
+| Kamera Gerbang Utama mengirim data ke luar markas | Tinggi | Aturan dasar, diperkuat skor AI perilaku | Menunggu keputusan petugas |
+| Laptop Staf Operasi menghubungi alamat luar secara teratur | Tinggi | Aturan dasar (sinyal berkala) | Menunggu keputusan petugas |
+| Perilaku tidak biasa: Kunci Pintu Gudang Senjata | Tinggi | **AI deteksi perilaku** | Menunggu keputusan petugas |
 
-Ada juga kejadian "Ada perangkat baru di jaringan", karena laptop penyerang belum pernah terlihat sebelumnya.
+Ada juga kejadian "Ada perangkat baru di jaringan", karena laptop penyerang belum pernah terlihat sebelumnya. Kejadian AI deteksi perilaku muncul paling akhir, sekitar 10 detik setelah pemindaian, karena AI menilai per rentang waktu 10 detik.
 
 Yang bisa dicoba:
 
 - klik kejadian untuk membaca penjelasannya,
+- lihat kotak biru **AI deteksi perilaku** berisi skor keanehan dan alasannya,
 - centang langkah SOP,
 - tekan **Isolasi perangkat**, **Bukan ancaman**, atau **Batalkan isolasi**,
-- tekan **Buat laporan** untuk laporan siap cetak,
+- tekan **Buat laporan** di kartu kejadian untuk laporan siap cetak,
+- di kotak **Asisten piket**, ketik pertanyaan atau klik salah satu contoh pertanyaan,
+- tekan **Buat laporan** di bagian laporan ganti piket, lalu **Salin**,
 - ganti nama operator di kanan atas.
 
 Setiap tindakanmu muncul di panel **Catatan bukti** di kanan bawah.
@@ -150,7 +154,9 @@ Tanpa AI, dashboard tetap menampilkan penjelasan bawaan. Untuk mencoba AI:
    python -m pjs --config config.demo.json uji-ai
    ```
 
-4. Jalankan ulang demo. Tanda di kanan atas dashboard berubah menjadi **"AI lokal: siap"**, dan penjelasan kejadian ditulis ulang oleh AI.
+4. Jalankan ulang demo. Tanda di kanan atas dashboard berubah menjadi **"AI lokal: siap"**. Penjelasan kejadian ditulis ulang oleh AI, dan asisten piket menjawab dengan bahasa sehari-hari, bukan sekadar hasil pencarian.
+
+AI deteksi perilaku **tidak** butuh Ollama. Ia sudah aktif di mode demo tanpa memasang apa pun.
 
 ### Tes otomatis
 
@@ -179,7 +185,9 @@ Hasil yang benar diakhiri dengan `OK`.
 | Dashboard kosong, tidak ada kejadian | Pastikan memakai `--putar`, lalu tunggu sekitar 40 detik |
 | Banner "Dashboard terputus dari kotak" | Terminal kotak tertutup atau kotak berhenti. Jalankan lagi perintah demo |
 | Layar merah "Catatan bukti rusak" padahal tidak sengaja | Skenario 4 pernah dijalankan. Mulai ulang dengan `--baru` |
-| Tanda kanan atas "AI lokal: tidak tersambung" | Normal kalau Ollama belum dipasang. Penjelasan bawaan tetap tampil |
+| Tanda kanan atas "AI lokal: tidak tersambung" | Normal kalau Ollama belum dipasang. Penjelasan bawaan tetap tampil, dan asisten memakai mode pencarian |
+| Tanda "AI perilaku: contoh normal belum cukup" | Kotak dijalankan tanpa contoh demo dan masa belajarnya belum menghasilkan 200 contoh per jaringan. Di mode demo, ini tidak terjadi |
+| Kejadian "Perilaku tidak biasa" belum muncul | Tunggu sekitar 10 detik setelah skenario 5 diputar |
 | `git clone` meminta masuk atau gagal | Kamu belum diundang atau belum menerima undangan kolaborator |
 
 ## Langkah berikutnya

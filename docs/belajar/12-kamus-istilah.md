@@ -29,12 +29,14 @@
 | IDS | Sistem pendeteksi serangan yang melihat salinan lalu lintas | 03 |
 | IPS | Sistem pencegah serangan yang berdiri di tengah jalur | 03 |
 | Isolasi | Memutus perangkat dari jaringan lain lewat router | 05 |
+| Isolation Forest | Algoritma machine learning yang menemukan data aneh dengan membelah data secara acak: yang aneh cepat terpisah | 13 |
 | IT | Teknologi informasi: komputer, server, data | 02 |
 | JSON | Format teks untuk data, misalnya `{"ip": "10.10.0.66"}` | 08 |
 | Kode buku jaga | 8 huruf awal sidik jari entri terakhir, disalin ke buku jaga kertas | 07 |
 | Kuantisasi | Memperkecil model AI dengan menyimpan angka lebih ringkas | 06 |
 | Kunci publik / rahasia | Pasangan kunci tanda tangan: rahasia untuk menandatangani, publik untuk memeriksa | 07 |
 | LLM | Model bahasa besar, AI yang menulis teks | 06 |
+| Machine learning | Cara membuat program belajar dari contoh data, bukan dari aturan yang ditulis tangan | 13 |
 | Masa belajar | Periode awal saat kotak mencatat perangkat normal tanpa membunyikan alarm | 03 |
 | Metadata | Data tentang percakapan (siapa, kapan, berapa banyak), bukan isinya | 03 |
 | Modbus | Bahasa peralatan industri, tanpa kata sandi, port 502 | 02 |
@@ -50,11 +52,14 @@
 | Port mirror (SPAN) | Fitur switch/router untuk menyalin lalu lintas ke satu colokan | 01 |
 | Promiscuous mode | Kartu jaringan menerima semua paket, bukan hanya miliknya | 01 |
 | Prompt | Perintah teks yang diberikan ke AI | 06 |
+| RAG | Cari data dulu, lalu AI menjawab hanya dari data itu. Dipakai asisten piket | 13 |
 | Rantai (chain) firewall | Kelompok aturan MikroTik: `input`, `forward`, `output` | 05 |
+| Rentang waktu (window) | Potongan waktu (5 menit, di demo 10 detik) tempat kegiatan perangkat diringkas | 13 |
 | Router | Penghubung antarjaringan yang menentukan rute dan memasang firewall | 01 |
 | RouterOS | Sistem operasi router MikroTik | 05 |
 | SHA-256 | Fungsi hash dengan hasil 256 bit (64 huruf heksadesimal) | 07 |
 | sid | Nomor unik aturan Suricata | 04 |
+| Skor keanehan | Angka 0–1 dari AI deteksi perilaku. Makin dekat ke 1, makin tidak biasa | 13 |
 | Sinyal berkala (beacon) | Sambungan berulang dengan jarak waktu nyaris sama, ciri program jahat | 03 |
 | Socket | "Colokan" program ke jaringan | 08 |
 | SOP | Prosedur tetap satuan, sumber langkah tindakan | 06 |
@@ -67,3 +72,4 @@
 | Timeout (batas waktu) | Lama alamat berada di karantina sebelum dihapus otomatis | 05 |
 | TPM | Chip keamanan untuk menyimpan kunci rahasia agar tidak bisa disalin | 07 |
 | XSS | Serangan dengan menyisipkan kode ke halaman web lewat data | 10 |
+| Zero-day | Serangan atau celah baru yang belum punya aturan atau tambalan | 13 |

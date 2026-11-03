@@ -20,6 +20,7 @@
     <span class="chip" id="chip-bukti">Catatan bukti: memeriksa</span>
     <span class="chip" id="chip-blokir">Blokir: -</span>
     <span class="chip" id="chip-ai">AI: -</span>
+    <span class="chip" id="chip-perilaku">AI perilaku: -</span>
   </div>
   <div class="who">
     <div class="clock" id="clock">-</div>
@@ -59,7 +60,34 @@
     <div id="incident-list" class="incident-list"></div>
   </section>
 
-  <section class="panel detail-panel" id="detail" aria-label="Rincian kejadian" aria-live="polite"></section>
+  <div class="center">
+    <section class="panel detail-panel" id="detail" aria-label="Rincian kejadian" aria-live="polite"></section>
+
+    <section class="panel assistant" aria-label="Asisten piket">
+      <div class="panel-head"><h2>Asisten piket &middot; AI lokal</h2><span class="muted" id="asst-mode"></span></div>
+      <form id="ask-form" class="ask">
+        <input id="ask-input" maxlength="300" autocomplete="off" placeholder="Tanya kotak, misalnya: ada apa dengan genset hari ini?" aria-label="Pertanyaan untuk asisten">
+        <button class="btn btn-primary" type="submit" id="ask-btn">Tanya</button>
+      </form>
+      <div class="examples" id="ask-examples">
+        <button type="button" class="example">Apa saja yang terjadi hari ini?</button>
+        <button type="button" class="example">Perangkat mana yang sedang diisolasi?</button>
+        <button type="button" class="example">Ada apa dengan Kamera Gerbang Utama?</button>
+      </div>
+      <div id="ask-answer" class="answer" hidden></div>
+      <div class="report-row">
+        <label class="muted" for="report-hours">Laporan ganti piket</label>
+        <select id="report-hours">
+          <option value="8">8 jam terakhir</option>
+          <option value="12">12 jam terakhir</option>
+          <option value="24">24 jam terakhir</option>
+        </select>
+        <button class="btn" type="button" id="btn-report">Buat laporan</button>
+        <button class="btn" type="button" id="btn-copy" hidden>Salin</button>
+      </div>
+      <pre id="report-text" class="report" hidden></pre>
+    </section>
+  </div>
 
   <aside class="side">
     <section class="panel">

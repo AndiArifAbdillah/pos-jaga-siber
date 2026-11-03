@@ -23,9 +23,10 @@ Alur video ada di [PENGUMPULAN-KARYA.md](../PENGUMPULAN-KARYA.md). Alur presenta
 | 0:00 | **Masalah.** Markas punya genset, kamera, dan kunci pintu yang tersambung jaringan. Peralatan ini tidak bisa dipasangi antivirus. Petugas jaga bukan ahli siber | Foto/gambar markas, daftar peralatan |
 | 1:00 | **Solusi.** Kalimat inti dan gambar cara kerja | Slide cara kerja |
 | 1:30 | **Demo skenario 1.** Laptop asing mencoba mematikan genset | Lampu genset, dashboard, MikroTik |
-| 4:00 | **Demo skenario 4.** Catatan bukti diubah, lalu ketahuan | Layar merah, kode buku jaga |
-| 4:45 | **Pembeda.** Kamera bocor dan sinyal berkala cukup disebut sambil menunjukkan screenshot | Mandiri, bahasa sehari-hari, peralatan dipisah, catatan bukti |
-| 5:30 | **Kelayakan dan penutup** dengan kalimat inti | Biaya per kotak, hasil uji lab, rencana pemasangan bertahap |
+| 3:30 | **Demo skenario 5 dan asisten.** AI deteksi perilaku menangkap kunci pintu yang memindai jaringan, lalu tanya asisten satu pertanyaan | Skor keanehan dan alasannya, jawaban asisten dengan nomor kejadian |
+| 4:45 | **Demo skenario 4 singkat.** Catatan bukti diubah, lalu ketahuan | Layar merah, kode buku jaga |
+| 5:15 | **Pembeda.** Tiga cara AI dipakai, mandiri, peralatan dipisah, catatan bukti | Slide pembeda |
+| 5:45 | **Kelayakan dan penutup** dengan kalimat inti | Biaya per kotak, hasil uji lab, rencana pemasangan bertahap |
 | 6:30 | **Tanya jawab** (sekitar 3,5 menit) | Tabel di bagian 5 |
 
 Kalau waktu tanya jawab terpotong, juri tidak sempat melihat kekuatan kalian. Latih bagian 0:00–6:30 sampai **tidak lebih dari 6,5 menit**.
@@ -56,6 +57,18 @@ Kalau lampu ESP32 belum siap, tunjukkan halaman lampu genset tiruan di browser.
 
 *"Misalkan ada yang ingin menghapus jejak."* Jalankan `ubah_catatan.py`, tekan **Periksa sekarang**. Layar merah: "Entri #… hilang". *"Dan kode di buku jaga kertas tidak bisa dihapus dari jauh."*
 
+### Skenario 5: AI deteksi perilaku (wajib, karena tema lomba adalah AI)
+
+*"Tiga skenario tadi tertangkap aturan. Sekarang serangan yang tidak ada aturannya."* Kunci pintu gudang senjata, yang biasanya hanya berbicara dengan PC pengendali, tiba-tiba menghubungi 14 alamat dalam 10 detik (di lab: `pindai_tiruan.py`).
+
+Klik kejadian "Perilaku tidak biasa". Tunjukkan kotak biru **AI deteksi perilaku**: skor keanehan dan alasannya. *"AI ini mempelajari kebiasaan normal setiap jaringan dengan machine learning. Ia tidak tahu nama serangannya, tetapi tahu ini tidak biasa, dan menjelaskan kenapa."*
+
+Tekankan: *"Temuan AI tidak memblokir sendiri. Keputusan tetap di tangan petugas."*
+
+### Asisten piket
+
+Ketik di kotak Asisten piket: *"Ada apa dengan Kamera Gerbang Utama?"* Tunjukkan jawabannya dan tombol nomor kejadian sumbernya. *"AI hanya menjawab dari catatan kotak. Nomor kejadian yang tidak ada di catatan dibuang."* Lalu tekan **Buat laporan**: laporan ganti piket siap disalin ke buku jaga.
+
 ## 4. Daftar periksa sebelum demo
 
 - [ ] Semua VM menyala, jam VM sesuai.
@@ -72,6 +85,11 @@ Kalau lampu ESP32 belum siap, tunjukkan halaman lampu genset tiruan di browser.
 
 | Pertanyaan | Jawaban |
 |---|---|
+| "Di mana AI-nya?" | Di tiga tempat. (1) AI deteksi perilaku: machine learning (Isolation Forest) yang mempelajari kebiasaan normal dan menemukan perangkat yang berubah perilaku, termasuk serangan yang belum punya aturan. (2) Penjelas: model bahasa lokal menjelaskan setiap kejadian ke petugas. (3) Asisten piket: menjawab pertanyaan dan menyusun laporan ganti piket dari data kotak. Semuanya berjalan di dalam kotak |
+| "Kenapa tidak semua deteksi memakai AI?" | Untuk genset, aturan tetap lebih bisa dipertanggungjawabkan: hasilnya pasti dan bisa diperiksa ulang. AI dipakai di tempat yang tidak bisa ditangani aturan, yaitu hal yang belum dikenal dan bahasa manusia. Itu yang kami maksud "tepat guna" |
+| "Model machine learning-nya dilatih pakai data apa?" | Di markas, dari lalu lintas markas itu sendiri selama masa belajar 14 hari, karena setiap markas punya kebiasaan berbeda. Untuk demo, dari 800 contoh perilaku normal buatan. Dari 800 contoh normal itu, tidak ada satu pun yang salah ditandai |
+| "Kenapa Isolation Forest, bukan deep learning?" | Tidak butuh data serangan berlabel (yang memang tidak dimiliki markas), cukup data normal. Ringan, berjalan di mini PC tanpa kartu grafis, dan alasannya bisa dijelaskan ke petugas |
+| "Bagaimana AI tidak mengarang jawaban?" | Asisten mencari data dulu, lalu AI hanya boleh menjawab dari data itu. Nomor kejadian yang disebut AI dicek, yang tidak ada dibuang. Di laporan piket, daftar kejadian dan angka diambil langsung dari data, AI hanya menulis ringkasannya |
 | "Ini kan cuma Suricata ditambah AI?" | Suricata hanya "mata". Yang kami bangun adalah apa yang terjadi setelahnya: pengenalan peralatan OT, keputusan otomatis yang aman untuk genset, penjelasan untuk petugas non-ahli, dan catatan bukti. Produk serupa dibuat untuk analis ahli di ruang kendali. Ini dibuat untuk petugas jaga di markas |
 | "Kenapa tidak pakai produk komersial?" | Produk komersial umumnya butuh langganan dan internet, serta mengirim data ke luar negeri. Kotak ini mandiri, berbahasa Indonesia, dan bisa dirawat sendiri |
 | "Kenapa offline? Serangan kan dari internet?" | Kotak tetap mengawasi lalu lintas internet. "Mandiri" artinya kotak tidak butuh internet untuk bekerja. Penyerang sering memutus internet lebih dulu, banyak serangan datang dari dalam (flashdisk, laptop tamu), dan data militer tidak boleh keluar |
@@ -90,6 +108,7 @@ Kalau lampu ESP32 belum siap, tunjukkan halaman lampu genset tiruan di browser.
 
 - "Tidak bisa diretas." Tidak ada sistem yang tidak bisa diretas.
 - "AI-nya memutuskan." AI tidak memutuskan apa pun.
+- "AI-nya pasti benar" atau "akurasinya 100%". Sebut angka yang benar-benar diuji, dan sebut bahwa data demo adalah data buatan.
 - "Blockchain" tanpa penjelasan.
 - Klaim uji coba yang belum dilakukan.
 

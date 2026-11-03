@@ -23,15 +23,16 @@ Dokumen ini ditulis untuk orang yang **belum pernah belajar jaringan atau keaman
 | 10 | [Dashboard web](10-dashboard-web.md) | HTML, CSS, JavaScript di layar operator | 1,5 jam |
 | 11 | [Demo dan tanya jawab](11-demo-dan-tanya-jawab.md) | Naskah demo dan jawaban untuk pertanyaan juri | 1 jam |
 | 12 | [Kamus istilah](12-kamus-istilah.md) | Semua istilah dalam satu tempat | (rujukan) |
+| 13 | [AI deteksi perilaku dan asisten piket](13-ai-deteksi-perilaku-dan-asisten.md) | "Mata kedua" dengan machine learning, tanya kotak, laporan ganti piket | 2 jam |
 
 ## Jalur per orang
 
-Semua orang wajib membaca **00, 01, 09 bagian "Perjalanan satu serangan", dan 11**. Selebihnya:
+Semua orang wajib membaca **00, 01, 09 bagian "Perjalanan satu serangan", 11, dan 13**. Bab 13 wajib untuk semua, karena tema lomba adalah pemanfaatan AI dan juri pasti bertanya tentang AI-nya. Selebihnya:
 
 | Orang | Fokus | Bab utama |
 |---|---|---|
 | A · jaringan dan keamanan | Lab, Suricata, MikroTik, lampu genset | 02, 03, 04, 05, lalu [PANDUAN-LAB](../PANDUAN-LAB.md) |
-| B · program dan AI | Kode Python, AI, catatan bukti | 06, 07, 08, 09 lengkap |
+| B · program dan AI | Kode Python, AI, catatan bukti | 06, 07, 08, 09 lengkap, 13 lengkap dengan latihannya |
 | C · tampilan dan cerita | Dashboard, slide, video | 02, 03, 07 (bagian awal), 10 |
 
 Bab yang bukan bagianmu tetap layak dibaca sekilas. Di depan juri, setiap anggota harus bisa menjawab pertanyaan tentang bagian mana pun.

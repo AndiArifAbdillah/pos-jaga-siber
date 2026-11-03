@@ -35,6 +35,19 @@ DEFAULTS = {
     # 1 sampai nilai ini. Suricata: 1 paling berat, 3 paling ringan.
     "suricata_lowest_severity": 2,
     "beacon": {"min_count": 6, "min_interval_s": 10, "max_interval_s": 3600, "max_jitter": 0.2},
+    # AI deteksi perilaku (Isolation Forest). window_s = panjang satu rentang waktu.
+    # Skor >= threshold menjadi kejadian sedang, >= high menjadi kejadian tinggi.
+    # seed_file = contoh perilaku normal dari berkas (dipakai demo), relatif ke folder konfigurasi.
+    "anomaly": {
+        "enabled": True,
+        "window_s": 300,
+        "threshold": 0.62,
+        "high": 0.72,
+        "min_samples": 200,
+        "trees": 100,
+        "sample_size": 256,
+        "seed_file": None,
+    },
     "mikrotik": {
         "enabled": False,
         "host": "10.10.0.1",

@@ -8,6 +8,9 @@ Alur satu catatan (lihat docs/belajar/09-tur-kode.md):
   4. Kritis + menyangkut peralatan (OT) -> isolasi otomatis dulu, baru dijelaskan.
      Selain itu -> dijelaskan, lalu petugas yang memutuskan.
   5. Setiap langkah ditulis ke catatan bukti.
+
+Selain itu, setiap sambungan dicatat untuk AI deteksi perilaku (anomaly.py).
+Setiap rentang waktu yang selesai dinilai lewat flush_behavior().
 """
 
 import itertools
@@ -19,6 +22,7 @@ from datetime import datetime
 
 from . import explainer as expl
 from . import playbook, vendors
+from .anomaly import BehaviorWatcher
 
 _TZ_NO_COLON = re.compile(r"([+-]\d\d)(\d\d)$")
 _ids = itertools.count(1)
@@ -56,6 +60,10 @@ class Detector:
             store.meta_set("learning_started", started)
         self.learning_started = float(started)
         self._load_configured_devices()
+        self.watcher = BehaviorWatcher(cfg["anomaly"], store, cfg.base_dir)
+        self._last_train = 0.0
+        if not self.learning_active():
+            self._train_behavior()
 
     # --- bantuan --------------------------------------------------------
     @property
@@ -94,6 +102,7 @@ class Detector:
             "src": self.device_name(src_ip),
             "dst": self.device_name(dst_ip),
             "signature": (facts or {}).get("signature") or "Kejadian mencurigakan",
+            "reason": (facts or {}).get("reason") or "",
         }
 
     # --- pintu masuk ----------------------------------------------------
@@ -107,13 +116,26 @@ class Detector:
             ts = parse_ts(event.get("timestamp"))
             ether = event.get("ether") or {}
             self._see_device(event.get("src_ip"), ether.get("src_mac"), ts)
-            self._see_device(event.get("dest_ip"), ether.get("dest_mac"), ts)
+            if self._destination_answered(event):
+                self._see_device(event.get("dest_ip"), ether.get("dest_mac"), ts)
             if event_type == "alert":
                 self._on_alert(event, ts)
             else:
                 self._on_traffic(event, ts)
 
     # --- daftar perangkat -----------------------------------------------
+    @staticmethod
+    def _destination_answered(event):
+        """Alamat tujuan dianggap perangkat nyata hanya kalau ia membalas.
+
+        Pemindai mencoba banyak alamat kosong. Tanpa pemeriksaan ini, setiap alamat
+        kosong yang dicoba akan tercatat sebagai "perangkat baru".
+        """
+        flow = event.get("flow")
+        if event.get("event_type") == "flow" and isinstance(flow, dict) and "pkts_toclient" in flow:
+            return (flow.get("pkts_toclient") or 0) > 0
+        return True
+
     def _see_device(self, ip, mac, ts):
         if not ip or not self.cfg.is_device_address(ip):
             return
@@ -171,9 +193,16 @@ class Detector:
     # --- aturan dasar dari lalu lintas biasa ----------------------------
     def _on_traffic(self, event, ts):
         src, dst = event.get("src_ip"), event.get("dest_ip")
-        if not src or not dst or not self.cfg.is_external(dst):
+        if not src or not dst:
             return
         zone = self.cfg.zone_of(src)
+        external = self.cfg.is_external(dst)
+        if event.get("event_type") == "flow":
+            flow = event.get("flow") or {}
+            self.watcher.observe(src, zone, external, dst, event.get("dest_port"),
+                                 flow.get("bytes_toserver"), flow.get("bytes_toclient"), ts)
+        if not external:
+            return
         if zone == "ot":
             facts = {"dest_port": event.get("dest_port"), "app_proto": event.get("app_proto")}
             out = (event.get("flow") or {}).get("bytes_toserver")
@@ -213,6 +242,45 @@ class Detector:
         self._beacon_reported.add(key)
         facts = {"interval_s": round(mean, 1), "jumlah": len(seen), "dest_port": event.get("dest_port")}
         self._raise("sinyal_berkala", None, src, dst, facts, ts)
+
+    # --- AI deteksi perilaku --------------------------------------------
+    def _train_behavior(self):
+        self._last_train = time.time()
+        self.watcher.train()
+
+    def flush_behavior(self, now=None):
+        """Nilai rentang waktu yang sudah selesai. Dipanggil kotak setiap detik."""
+        now = now if now is not None else time.time()
+        with self._lock:
+            learning = self.learning_active()
+            if not learning and not self.watcher.models and time.time() - self._last_train > 600:
+                self._train_behavior()
+            for ip, zone, feats, start in self.watcher.due(now):
+                if learning:
+                    self.store.add_sample(zone, start, feats)
+                    continue
+                result = self.watcher.evaluate(zone, feats)
+                if result is None:
+                    continue
+                score, reason = result
+                if score >= self.watcher.threshold:
+                    self._raise_behavior(ip, score, reason, start + self.watcher.window_s)
+
+    def _raise_behavior(self, ip, score, reason, ts):
+        """Perilaku aneh. Kalau perangkat ini sudah punya kejadian terbuka dari aturan lain,
+        skor AI ditempelkan ke kejadian itu sebagai penguat, bukan kejadian baru."""
+        score = round(score, 2)
+        existing = self.store.find_open_incident_by_src(ip)
+        if existing:
+            facts = existing["facts"] or {}
+            if score > facts.get("ml_score", 0):
+                facts.update(ml_score=score, ml_reason=reason)
+                self.store.update_incident(existing["id"], facts=facts)
+            if existing["kind"] != "perilaku_aneh":
+                return existing["id"]
+        severity = "tinggi" if score >= self.watcher.high else "sedang"
+        facts = {"ml_score": score, "ml_reason": reason, "reason": reason, "window_s": self.watcher.window_s}
+        return self._raise("perilaku_aneh", severity, ip, "", facts, ts)
 
     # --- kejadian -------------------------------------------------------
     def _raise(self, kind, severity, src, dst, facts, ts):

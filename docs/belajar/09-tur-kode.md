@@ -17,6 +17,8 @@ Bab ini mengikuti **satu serangan genset** dari detik pertama sampai muncul di d
 | `pjs/ed25519_pure.py` | Tanda tangan Ed25519 cadangan | `evidence` |
 | `pjs/responder.py` | Blokir lewat API MikroTik | `detector` |
 | `pjs/explainer.py` | Penjelasan bawaan dan AI | `detector` |
+| `pjs/anomaly.py` | AI deteksi perilaku: ringkasan per rentang waktu, Isolation Forest, alasan | `detector` |
+| `pjs/assistant.py` | Asisten piket: tanya kotak dan laporan ganti piket | `server` |
 | `pjs/server.py` | Server web dan API | `__main__` |
 | `pjs/replay.py` | Memutar contoh catatan untuk demo | `__main__` |
 | `pjs/vendors.py` | Menebak merek dari MAC | `detector` |
@@ -129,6 +131,10 @@ X-PJS: 1
 
 `server.py` memeriksa kepala `X-PJS`, lalu memanggil `Detector.set_step(...)`. Hasilnya disimpan dan dicatat sebagai `langkah_dicentang`. Setiap tombol lain bekerja dengan cara yang sama.
 
+### Jalur kedua: AI deteksi perilaku
+
+Selain jalur di atas, setiap catatan `flow` juga masuk ke `BehaviorWatcher.observe` (`pjs/anomaly.py`) dan dikumpulkan per perangkat per rentang waktu. Thread `penilai-perilaku` (`app.py`) memanggil `Detector.flush_behavior` setiap detik. Rentang yang sudah selesai disimpan sebagai contoh (selama masa belajar) atau dinilai model. Skor tinggi menjadi kejadian `perilaku_aneh` lewat `_raise_behavior`, atau ditempelkan ke kejadian yang sudah ada. Penjelasan lengkapnya di [bab 13](13-ai-deteksi-perilaku-dan-asisten.md).
+
 ## 4. Siklus status kejadian
 
 ```
@@ -166,6 +172,8 @@ Lihat isinya sendiri dengan `python -c "import sqlite3; print(sqlite3.connect('d
 | `POST /api/insiden/<id>/buka-lagi` | `Detector.reopen()` |
 | `POST /api/insiden/<id>/langkah` | `Detector.set_step()` |
 | `POST /api/bukti/periksa` | `App.check_integrity()` |
+| `POST /api/asisten/tanya` | `ShiftAssistant.ask()` |
+| `POST /api/asisten/laporan-piket` | `ShiftAssistant.shift_report()` |
 | `GET /laporan/<id>` | Laporan siap cetak, sekaligus `Detector.mark_reported()` |
 
 ## 7. Menambah jenis kejadian baru (latihan besar)

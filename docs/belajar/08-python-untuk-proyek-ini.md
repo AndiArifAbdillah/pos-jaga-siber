@@ -139,6 +139,7 @@ Kotak mengerjakan beberapa hal **bersamaan**: membaca `eve.json`, melayani dashb
 | `pembaca-eve` | Membaca eve.json terus-menerus | `collector.py` |
 | `penjelas-ai` | Mengirim prompt ke Ollama satu per satu | `explainer.py` |
 | `pemeriksa-rantai` | Memeriksa catatan bukti setiap 5 menit | `app.py` |
+| `penilai-perilaku` | Setiap detik menilai rentang waktu yang sudah selesai (AI deteksi perilaku) | `app.py` |
 | thread server web | Satu thread per permintaan dashboard | `server.py` |
 
 Kalau dua thread mengubah data yang sama bersamaan, hasilnya bisa kacau. **Kunci** (`threading.Lock`) memastikan hanya satu thread yang masuk:

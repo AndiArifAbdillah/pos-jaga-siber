@@ -43,6 +43,8 @@ def build_prompt(incident, names, zones):
     facts = incident.get("facts") or {}
     step_lines = "\n".join(f"{i}. {s['text']}" for i, s in enumerate(incident.get("steps") or [], start=1))
     note = facts.get("signature") or "-"
+    if facts.get("ml_score") is not None:
+        note += f"\n- Catatan AI deteksi perilaku: skor keanehan {facts['ml_score']} dari 1, karena perangkat {facts.get('ml_reason', '-')}"
     return f"""Kamu membantu petugas jaga di markas satuan TNI AD. Petugas ini bukan ahli komputer.
 Tulis penjelasan singkat tentang kejadian jaringan di bawah ini dalam bahasa Indonesia sehari-hari.
 
@@ -114,7 +116,9 @@ class Explainer:
                 self.state = "tidak_tersambung"
                 self.on_failed(incident_id, str(exc))
 
-    def ask(self, prompt):
+    def generate(self, prompt, timeout=None):
+        """Kirim prompt ke Ollama dan kembalikan jawaban JSON sebagai dict.
+        Dipakai juga oleh asisten piket (assistant.py)."""
         body = json.dumps({
             "model": self.model,
             "prompt": prompt,
@@ -123,9 +127,15 @@ class Explainer:
             "options": {"temperature": 0.2},
         }).encode("utf-8")
         req = urllib.request.Request(self.url + "/api/generate", data=body, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout or self.timeout) as resp:
             reply = json.loads(resp.read().decode("utf-8"))
         answer = json.loads(reply.get("response", "{}"))
+        if not isinstance(answer, dict):
+            raise ValueError("Jawaban AI bukan JSON objek.")
+        return answer
+
+    def ask(self, prompt):
+        answer = self.generate(prompt)
         what, why = _clean(answer.get("apa", "")), _clean(answer.get("kenapa", ""))
         if not what or not why:
             raise ValueError("Jawaban AI tidak lengkap.")

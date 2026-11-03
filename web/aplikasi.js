@@ -141,6 +141,18 @@ function renderChips() {
     memeriksa: ["AI lokal: memeriksa", ""],
   }[d.links.ai] || [`AI: ${d.links.ai}`, ""];
   setChip("chip-ai", ai[0], ai[1]);
+
+  const p = d.links.perilaku || { state: "mati" };
+  const zones = (p.zones || []).map((z) => (z === "ot" ? "peralatan" : "kantor")).join(", ");
+  const samples = p.samples ? (p.samples.ot || 0) + (p.samples.it || 0) : 0;
+  const perilaku = {
+    aktif: [`AI perilaku: aktif (${zones})`, "ok"],
+    belajar: [`AI perilaku: belajar (${samples} contoh)`, ""],
+    kurang_data: ["AI perilaku: contoh normal belum cukup", "warn"],
+    mati: ["AI perilaku: mati", ""],
+  }[p.state] || ["AI perilaku: -", ""];
+  setChip("chip-perilaku", perilaku[0], perilaku[1]);
+  $("asst-mode").textContent = d.links.ai === "siap" ? `model ${d.links.ai_model}` : "tanpa AI: mode pencarian";
 }
 
 function renderTiles() {
@@ -258,6 +270,16 @@ function renderDetail() {
   const facts = [`Terjadi ${inc.count} kali`, `pertama ${hhmm(inc.first_seen)}`, `terakhir ${hhmm(inc.last_seen)}`];
   if (inc.facts && inc.facts.interval_s) facts.push(`jarak rata-rata ${inc.facts.interval_s} detik`);
 
+  let ml = "";
+  if (inc.facts && inc.facts.ml_score != null) {
+    const score = Number(inc.facts.ml_score);
+    ml = `<div class="ml">
+      <div class="ml-head"><span>AI deteksi perilaku</span><span>skor keanehan ${esc(score.toFixed(2).replace(".", ","))} dari 1</span></div>
+      <div class="ml-bar"><span class="${score >= 0.72 ? "hot" : ""}" style="width:${Math.round(Math.min(score, 1) * 100)}%"></span></div>
+      <div class="ml-text">Perangkat ${esc(inc.facts.ml_reason)}.</div>
+    </div>`;
+  }
+
   el.innerHTML = `
     <div class="d-head">
       <span class="pill sev-${esc(inc.severity)}">${esc(SEV[inc.severity] || inc.severity)}</span>
@@ -268,6 +290,7 @@ function renderDetail() {
     <div class="route">${party("DARI", inc.src)}<div class="arrow" aria-hidden="true">&rarr;</div>${party("KE", inc.dst)}</div>
     <div class="facts">${esc(facts.join(" · "))}</div>
     ${inc.note ? `<div class="note">${esc(inc.note)}</div>` : ""}
+    ${ml}
     <div class="ai-card">
       <div class="ai-head"><h2>Penjelasan</h2><span class="ai-src ${srcClass}">${srcText}</span></div>
       <div class="ai-block"><div class="ai-label">Apa yang terjadi</div><div>${esc(exp.what)}</div></div>
@@ -336,6 +359,89 @@ $("btn-check").addEventListener("click", async () => {
   } finally {
     btn.disabled = false;
     await load();
+  }
+});
+
+// --- asisten piket --------------------------------------------------------
+async function askAssistant(question) {
+  const btn = $("ask-btn");
+  const box = $("ask-answer");
+  btn.disabled = true;
+  box.hidden = false;
+  box.innerHTML = `<div class="mode">Asisten sedang mencari jawaban di catatan kotak...</div>`;
+  try {
+    const r = await post("/api/asisten/tanya", { pertanyaan: question });
+    if (!r.ok) {
+      box.innerHTML = `<div class="mode">${esc(r.message)}</div>`;
+      return;
+    }
+    const mode = r.mode === "ai"
+      ? `Dijawab AI lokal (${esc(r.model)}) hanya dari catatan kotak`
+      : "AI lokal belum tersambung: ini hasil pencarian di catatan kotak";
+    const src = r.sources.length
+      ? `<div class="src">Sumber: ${r.sources.map((s) => `<button type="button" data-id="${esc(s)}">${esc(s)}</button>`).join("")}</div>`
+      : "";
+    box.innerHTML = `<div class="mode">${mode}</div><div>${esc(r.answer)}</div>${src}`;
+  } catch (e) {
+    box.innerHTML = `<div class="mode">Kotak tidak bisa dihubungi.</div>`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+$("ask-form").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const question = $("ask-input").value.trim();
+  if (question) askAssistant(question);
+});
+
+$("ask-examples").addEventListener("click", (ev) => {
+  const btn = ev.target.closest(".example");
+  if (!btn) return;
+  $("ask-input").value = btn.textContent;
+  askAssistant(btn.textContent);
+});
+
+$("ask-answer").addEventListener("click", (ev) => {
+  const btn = ev.target.closest("button[data-id]");
+  if (!btn) return;
+  state.selected = btn.dataset.id;
+  state.detailKey = "";
+  renderList();
+  renderDetail();
+  $("detail").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+$("btn-report").addEventListener("click", async () => {
+  const btn = $("btn-report");
+  btn.disabled = true;
+  btn.textContent = "Menyusun...";
+  try {
+    const r = await post("/api/asisten/laporan-piket", { jam: Number($("report-hours").value) });
+    $("report-text").textContent = r.text;
+    $("report-text").hidden = false;
+    $("btn-copy").hidden = false;
+    toast(r.mode === "ai" ? "Laporan selesai. Ringkasan disusun AI lokal." : "Laporan selesai (ringkasan bawaan).");
+  } catch (e) {
+    toast("Kotak tidak bisa dihubungi.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Buat laporan";
+    load();
+  }
+});
+
+$("btn-copy").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText($("report-text").textContent);
+    toast("Laporan disalin. Tempel ke buku jaga atau pesan.");
+  } catch (e) {
+    const range = document.createRange();
+    range.selectNodeContents($("report-text"));
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    toast("Teks sudah dipilih. Tekan Ctrl+C untuk menyalin.");
   }
 });
 

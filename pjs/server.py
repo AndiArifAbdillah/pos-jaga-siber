@@ -10,6 +10,8 @@ API:
   POST /api/insiden/<id>/buka-lagi      buka lagi kejadian
   POST /api/insiden/<id>/langkah        {"index": 0, "checked": true}
   POST /api/bukti/periksa               periksa rantai catatan bukti
+  POST /api/asisten/tanya               {"pertanyaan": "..."} tanya kotak
+  POST /api/asisten/laporan-piket       {"jam": 8} laporan ganti piket
   GET  /laporan/<id>                    laporan siap cetak
 
 Setiap POST wajib membawa kepala "X-PJS: 1". Halaman web lain tidak bisa
@@ -95,6 +97,15 @@ def make_handler(app):
             if path == "/api/bukti/periksa":
                 result = app.check_integrity(record=True, operator=operator)
                 return self._json(200, {"ok": True, "integrity": result})
+            if path == "/api/asisten/tanya":
+                result = app.assistant.ask(body.get("pertanyaan", ""), operator=operator)
+                return self._json(200 if result["ok"] else 400, result)
+            if path == "/api/asisten/laporan-piket":
+                try:
+                    hours = int(body.get("jam", 8))
+                except (TypeError, ValueError):
+                    hours = 8
+                return self._json(200, app.assistant.shift_report(hours, operator=operator))
             match = ACTION_PATH.match(path)
             if not match:
                 return self._json(404, {"ok": False, "message": "Alamat tidak dikenal."})

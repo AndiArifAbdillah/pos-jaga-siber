@@ -16,6 +16,7 @@
   "router_macs": [],
   "learning_hours": 336,
   "auto_isolate": true,
+  "anomaly": {"enabled": true, "window_s": 300, "threshold": 0.62, "high": 0.72, "min_samples": 200},
   "mikrotik": {
     "enabled": true,
     "host": "10.10.0.1",

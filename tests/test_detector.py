@@ -2,6 +2,7 @@ import json
 import tempfile
 import time
 import unittest
+from datetime import datetime
 from pathlib import Path
 
 from pjs import config
@@ -65,7 +66,7 @@ class DetectorTest(unittest.TestCase):
         """Putar catatan dengan waktu buatan yang berjarak tetap."""
         t = start or time.time()
         for event in events:
-            stamp = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(t)) + ".000000+0700"
+            stamp = datetime.fromtimestamp(t).astimezone().isoformat(timespec="microseconds")
             event = dict(event, timestamp=stamp)
             if "flow" in event:
                 event["flow"] = dict(event["flow"], start=stamp)
@@ -155,6 +156,45 @@ class DetectorTest(unittest.TestCase):
     def test_parse_ts_formats(self):
         self.assertAlmostEqual(parse_ts("2026-11-12T15:20:01.123456+0700"), parse_ts("2026-11-12T15:20:01.123456+07:00"))
         self.assertAlmostEqual(parse_ts("2026-11-12T08:20:01Z"), parse_ts("2026-11-12T15:20:01+07:00"))
+
+    # --- AI deteksi perilaku --------------------------------------------
+    def test_ai_behavior_flags_scanning_door_without_blocking(self):
+        start = time.time() - 3600
+        self.play(sample_events(), start=start, step_s=0.1)
+        self.detector.flush_behavior(start + 3600)
+        odd = [i for i in self.store.list_incidents() if i["kind"] == "perilaku_aneh"]
+        door = next(i for i in odd if i["src_ip"] == "10.20.0.40")
+        self.assertGreaterEqual(door["facts"]["ml_score"], 0.72)
+        self.assertEqual(door["severity"], "tinggi")
+        self.assertEqual(door["status"], "menunggu")
+        self.assertNotIn("10.20.0.40", self.responder.isolated)
+        self.assertIn("perangkat atau alamat berbeda", door["explanation"]["what"])
+        camera = self.incidents()["ot_ke_luar"]
+        self.assertGreaterEqual(camera["facts"]["ml_score"], 0.72)
+        self.assertFalse(any(i["src_ip"] == "10.20.0.21" for i in odd), "skor kamera harus menempel ke kejadian kamera")
+
+    def test_scan_targets_that_do_not_answer_are_not_devices(self):
+        self.play(sample_events())
+        self.assertIsNone(self.store.get_device("10.20.0.11"))
+        self.assertNotIn("perangkat_baru", {i["kind"] for i in self.store.list_incidents() if i["src_ip"] == "10.20.0.11"})
+
+    def test_learning_collects_samples_instead_of_alerting(self):
+        cfg = config.load(ROOT / "config.demo.json", overrides={"learning_hours": 1, "anomaly": {"seed_file": None}})
+        store = Store(Path(self.dir.name) / "belajar.sqlite3")
+        try:
+            detector = Detector(cfg, store, self.evidence, FakeResponder(), FakeExplainer())
+            start = time.time() - 600
+            t = start
+            for event in sample_events():
+                stamp = datetime.fromtimestamp(t).astimezone().isoformat()
+                detector.process(dict(event, timestamp=stamp))
+                t += 0.1
+            detector.flush_behavior(start + 600)
+            self.assertGreater(len(store.list_samples("ot")), 0)
+            self.assertNotIn("perilaku_aneh", {i["kind"] for i in store.list_incidents()})
+            self.assertEqual(detector.watcher.status(detector.learning_active())["state"], "belajar")
+        finally:
+            store.close()
 
 
 if __name__ == "__main__":

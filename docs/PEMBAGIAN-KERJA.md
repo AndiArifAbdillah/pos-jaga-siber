@@ -17,8 +17,8 @@ Rulebook mewajibkan **setiap anggota berkontribusi aktif**. Kalau jumlah anggota
 | Tanggal | A · jaringan dan keamanan | B · program dan AI | C · tampilan dan cerita |
 |---|---|---|---|
 | Sel–Rab, 3–4 Nov | Susun lab virtual (bagian 1–4 [PANDUAN-LAB](PANDUAN-LAB.md)) sampai Suricata menulis peringatan genset | Baca [belajar 08–09](belajar/08-python-untuk-proyek-ini.md), jalankan tes, pasang Ollama, pilih model | Jalankan demo, pesan perlengkapan lampu **hari ini**, baca belajar 10–11, tulis naskah video dan kerangka slide |
-| Kam–Sab, 5–7 Nov | **Kamis 5 Nov: Webinar 2 bertiga.** Blokir MikroTik sungguhan, rakit lampu ESP32 kalau barangnya sudah datang | Sambungkan kotak ke Suricata di lab (bersama A), sesuaikan langkah SOP, uji penjelasan AI | Sesuaikan dashboard (nama satuan, tampilan), draf slide, rancang thumbnail |
-| Min–Sen, 8–9 Nov | **Minggu 8 Nov: anggota tim harus sudah pasti.** Bertiga: jalankan keempat skenario di lab dari awal sampai akhir. A mencatat masalah di lab | Perbaiki masalah yang ditemukan | Susun alur video, ambil screenshot dashboard |
+| Kam–Sab, 5–7 Nov | **Kamis 5 Nov: Webinar 2 bertiga.** Blokir MikroTik sungguhan, rakit lampu ESP32 kalau barangnya sudah datang | Sambungkan kotak ke Suricata di lab (bersama A), sesuaikan langkah SOP, uji penjelasan AI, asisten piket, dan AI deteksi perilaku ([belajar 13](belajar/13-ai-deteksi-perilaku-dan-asisten.md)) | Sesuaikan dashboard (nama satuan, tampilan), draf slide, rancang thumbnail |
+| Min–Sen, 8–9 Nov | **Minggu 8 Nov: anggota tim harus sudah pasti.** Bertiga: jalankan kelima skenario di lab dari awal sampai akhir, termasuk masa belajar AI deteksi perilaku ([PANDUAN-LAB bagian 8b](PANDUAN-LAB.md)). A mencatat masalah di lab | Perbaiki masalah yang ditemukan | Susun alur video, ambil screenshot dashboard |
 | Sel–Kam, 10–12 Nov | Bertiga: latihan demo dan rekam video (maksimal 10 menit). A menjalankan lab, B menjaga kotak dan AI, C membawakan cerita. **Kamis 12 Nov berhenti menambah fitur** | | |
 | Jum–Sab, 13–14 Nov | Tulis bagian arsitektur, hasil uji lab, dan perkiraan biaya di slide. Ambil screenshot lab | Tulis bagian teknologi dan pagar pengaman AI di slide. Ubah repo jadi publik. Siaga perbaikan | Sunting video dan unggah ke YouTube, buat thumbnail, satukan slide. **Kumpulkan Sabtu 14 Nov** |
 | Min, 15 Nov | Cadangan. Batas resmi pukul **23.59 WIB** | | |
@@ -42,6 +42,7 @@ Kalau satu titik tidak tercapai, potong pekerjaan bonus, jangan geser tanggal pe
 | Skenario genset di lab dengan blokir MikroTik sungguhan | Lampu ESP32 fisik (tanpa lampu, pakai halaman lampu genset tiruan) |
 | Dashboard dengan kartu penjelasan dan tombol | Penjelasan AI (tanpa AI, penjelasan bawaan tetap tampil) |
 | Catatan bukti dan pemeriksaannya (skenario 4) | Uji coba di jaringan nyata dengan izin pemiliknya |
+| **AI deteksi perilaku (skenario 5) dan asisten piket.** Tema lomba adalah AI. Minimal di mode demo, lebih baik di lab | Penjelasan dan jawaban asisten oleh model bahasa (tanpa Ollama, asisten memakai mode pencarian) |
 | Lima berkas pengumpulan | |
 | Skenario kamera dan sinyal berkala di lab sungguhan (dengan 3 orang, ini dikejar; kalau macet, tunjukkan lewat mode demo) | |
 

@@ -151,6 +151,35 @@ button { font: inherit; }
 .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .btn-wide { width: 100%; margin-top: 8px; }
 
+/* --- skor AI deteksi perilaku ------------------------------------------ */
+.ml { margin-top: 10px; border: 1px solid #284566; background: var(--mid-bg); border-radius: 6px; padding: 8px 10px; }
+.ml-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--mid); font-weight: 600; }
+.ml-bar { height: 6px; border-radius: 3px; background: var(--line); margin: 6px 0; overflow: hidden; }
+.ml-bar span { display: block; height: 100%; background: var(--mid); }
+.ml-bar span.hot { background: var(--high); }
+.ml-text { font-size: 12px; color: var(--fg); }
+
+/* --- asisten piket ----------------------------------------------------- */
+.center { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.ask { display: flex; gap: 8px; }
+.ask input, .report-row select {
+  flex: 1; min-width: 0; background: var(--bg); color: var(--fg); border: 1px solid var(--line-strong);
+  border-radius: 6px; padding: 8px 10px; font: inherit;
+}
+.report-row select { flex: none; }
+.examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.example {
+  background: transparent; color: var(--muted); border: 1px dashed var(--line-strong); border-radius: 999px;
+  padding: 3px 10px; font-size: 12px; cursor: pointer;
+}
+.example:hover { color: var(--fg); border-color: var(--accent); }
+.answer { margin-top: 10px; border-left: 3px solid var(--accent); background: var(--panel-2); padding: 10px 12px; border-radius: 4px; }
+.answer .src { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.answer .src button { font: 11px var(--mono); background: var(--bg); color: var(--accent); border: 1px solid var(--line-strong); border-radius: 4px; padding: 1px 6px; cursor: pointer; }
+.answer .mode { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.report-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.report { margin: 10px 0 0; white-space: pre-wrap; font: 12px/1.5 var(--mono); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; max-height: 360px; overflow: auto; }
+
 /* --- perangkat --------------------------------------------------------- */
 .devs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 260px; overflow-y: auto; }
 .dev { display: flex; align-items: flex-start; gap: 8px; padding: 5px 2px; border-bottom: 1px solid var(--line); }
@@ -195,6 +224,7 @@ button { font: inherit; }
   .side { grid-template-columns: minmax(0, 1fr); }
   .incident-list { max-height: 40vh; }
   .route { grid-template-columns: minmax(0, 1fr); }
+  .ask { flex-direction: column; }
   .arrow { transform: rotate(90deg); justify-self: center; }
   .operator input { width: 130px; }
 }

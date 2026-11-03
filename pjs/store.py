@@ -50,7 +50,14 @@ CREATE TABLE IF NOT EXISTS suppressions (
     PRIMARY KEY (kind, src_ip, dst_ip)
 );
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
+CREATE TABLE IF NOT EXISTS behavior_samples (
+    zone TEXT,
+    ts REAL,
+    features TEXT
+);
 """
+
+MAX_SAMPLES_PER_ZONE = 5000
 
 OPEN_STATUSES = ("menunggu", "diisolasi")
 JSON_FIELDS = ("facts", "explanation", "steps")
@@ -148,6 +155,15 @@ class Store:
             )
         )
 
+    def find_open_incident_by_src(self, src_ip):
+        marks = ", ".join("?" for _ in OPEN_STATUSES)
+        return self._decode(
+            self._one(
+                f"SELECT * FROM incidents WHERE src_ip = ? AND status IN ({marks}) ORDER BY first_seen DESC LIMIT 1",
+                (src_ip, *OPEN_STATUSES),
+            )
+        )
+
     def list_incidents(self, limit=100):
         rows = self._all("SELECT * FROM incidents ORDER BY last_seen DESC LIMIT ?", (limit,))
         return [self._decode(r) for r in rows]
@@ -169,6 +185,18 @@ class Store:
 
     def remove_suppression(self, kind, src_ip, dst_ip):
         self._run("DELETE FROM suppressions WHERE kind = ? AND src_ip = ? AND dst_ip = ?", (kind, src_ip, dst_ip))
+
+    # --- contoh perilaku normal untuk AI deteksi perilaku ---------------
+    def add_sample(self, zone, ts, features):
+        self._run("INSERT INTO behavior_samples (zone, ts, features) VALUES (?, ?, ?)", (zone, ts, json.dumps(features)))
+        self._run(
+            "DELETE FROM behavior_samples WHERE zone = ? AND rowid NOT IN "
+            "(SELECT rowid FROM behavior_samples WHERE zone = ? ORDER BY ts DESC LIMIT ?)",
+            (zone, zone, MAX_SAMPLES_PER_ZONE),
+        )
+
+    def list_samples(self, zone):
+        return [json.loads(r["features"]) for r in self._all("SELECT features FROM behavior_samples WHERE zone = ?", (zone,))]
 
     def is_suppressed(self, kind, src_ip, dst_ip):
         return (

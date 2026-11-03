@@ -6,6 +6,7 @@ import time
 from datetime import datetime
 
 from . import __version__
+from .assistant import ShiftAssistant
 from .collector import EveTailer
 from .detector import Detector
 from .evidence import EvidenceLog
@@ -30,6 +31,8 @@ ENTRY_TEXT = {
     "laporan_dibuat": "{incident}: laporan dibuat oleh {operator}",
     "penjelasan_ai": "{incident}: penjelasan AI tersusun",
     "pemeriksaan_rantai": "Rantai diperiksa: {result}",
+    "tanya_kotak": "Asisten ditanya oleh {operator}",
+    "laporan_piket": "Laporan ganti piket {hours} jam dibuat oleh {operator}",
 }
 
 
@@ -60,6 +63,7 @@ class App:
         )
         self.detector = Detector(cfg, self.store, self.evidence, self.responder, self.explainer)
         self.tailer = EveTailer(cfg.eve_path, self.detector.process, from_start=cfg["read_from_start"])
+        self.assistant = ShiftAssistant(self)
         self._integrity = self.evidence.verify()
         self._integrity_lock = threading.Lock()
 
@@ -68,9 +72,19 @@ class App:
         self.evidence.append("kotak_menyala", {
             "version": __version__, "blokir": self.responder.mode,
             "ai": self.explainer.state, "signer": self.evidence.signer.backend,
+            "ai_perilaku": self.detector.watcher.status(self.detector.learning_active())["state"],
         })
         self.tailer.start()
         threading.Thread(target=self._integrity_loop, name="pemeriksa-rantai", daemon=True).start()
+        threading.Thread(target=self._behavior_loop, name="penilai-perilaku", daemon=True).start()
+
+    def _behavior_loop(self):
+        while True:
+            time.sleep(1)
+            try:
+                self.detector.flush_behavior()
+            except Exception:
+                log.exception("Penilaian perilaku gagal, dicoba lagi.")
 
     def stop(self):
         self.tailer.stop()
@@ -131,7 +145,8 @@ class App:
         return {
             "box": {"name": self.cfg["box_name"], "unit": self.cfg["unit"], "operator": self.cfg["operator"],
                     "version": __version__, "now": time.time()},
-            "links": {"blokir": self.responder.mode, "ai": self.explainer.state, "ai_model": self.explainer.model},
+            "links": {"blokir": self.responder.mode, "ai": self.explainer.state, "ai_model": self.explainer.model,
+                      "perilaku": self.detector.watcher.status(self.detector.learning_active())},
             "learning": {"active": self.detector.learning_active(), "until": self.detector.learning_until},
             "sensor": {"eve_path": str(self.cfg.eve_path), "lines_read": self.tailer.lines_read},
             "incidents": incidents,

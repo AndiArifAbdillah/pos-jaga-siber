@@ -50,10 +50,12 @@ Isi yang disarankan: nama **Pos Jaga Siber**, kalimat inti, dan potongan dashboa
 Usulan urutan:
 
 1. Dashboard lengkap: kejadian kritis "Perintah asing ke Genset utama" sudah diisolasi otomatis.
-2. Rincian kejadian: kartu "Apa yang terjadi", "Kenapa berbahaya", dan langkah SOP yang dicentang.
-3. Layar merah "Catatan bukti rusak" setelah skenario 4.
-4. Laporan kejadian siap cetak.
+2. Kejadian "Perilaku tidak biasa" dengan kotak skor AI deteksi perilaku dan alasannya.
+3. Asisten piket: jawaban pertanyaan dan laporan ganti piket.
+4. Layar merah "Catatan bukti rusak" setelah skenario 4.
 5. Lab: terminal penyerang yang gagal setelah diblokir, berdampingan dengan daftar `pjs-karantina` di MikroTik (atau lampu genset).
+
+Kartu penjelasan dan langkah SOP sudah terlihat di screenshot 1 atau 2.
 
 ### 4. Video (maksimal 10 menit, YouTube)
 
@@ -65,14 +67,16 @@ Alur yang disarankan (sekitar 9 menit):
 
 | Menit | Isi |
 |---|---|
-| 0:00–0:45 | Masalah: genset, kamera, dan kunci pintu markas tersambung jaringan, tidak bisa dipasangi antivirus, petugas jaga bukan ahli siber |
-| 0:45–1:30 | Solusi dan kalimat inti, gambar cara kerja |
-| 1:30–4:00 | Demo skenario 1 di lab: serangan ke genset → isolasi otomatis → kiriman penyerang berikutnya gagal → daftar karantina MikroTik → penjelasan dan centang langkah |
-| 4:00–5:30 | Skenario 2 (kamera bocor) dan 3 (sinyal berkala): petugas yang memutuskan |
-| 5:30–6:30 | Skenario 4: catatan bukti diubah lalu ketahuan, kode buku jaga |
-| 6:30–7:15 | Bukti mandiri: sambungan internet kotak diputus, kotak tetap bekerja |
-| 7:15–8:15 | Arsitektur, teknologi, dan pagar pengaman AI |
-| 8:15–9:00 | Kelayakan: biaya per kotak, pemasangan bertahap, rencana lanjutan. Penutup dengan kalimat inti |
+| 0:00–0:40 | Masalah: genset, kamera, dan kunci pintu markas tersambung jaringan, tidak bisa dipasangi antivirus, petugas jaga bukan ahli siber |
+| 0:40–1:20 | Solusi dan kalimat inti, gambar cara kerja, tiga cara AI dipakai |
+| 1:20–3:20 | Demo skenario 1 di lab: serangan ke genset → isolasi otomatis → kiriman penyerang berikutnya gagal → daftar karantina MikroTik → penjelasan dan centang langkah |
+| 3:20–4:20 | Skenario 2 (kamera bocor, ditambah skor AI) dan 3 (sinyal berkala): petugas yang memutuskan |
+| 4:20–5:30 | **Skenario 5: AI deteksi perilaku** menangkap kunci pintu yang memindai jaringan, tanpa aturan khusus. Tunjukkan skor dan alasannya |
+| 5:30–6:15 | **Asisten piket:** tanya kotak, lalu laporan ganti piket |
+| 6:15–7:00 | Skenario 4: catatan bukti diubah lalu ketahuan, kode buku jaga |
+| 7:00–7:30 | Bukti mandiri: sambungan internet kotak diputus, kotak tetap bekerja |
+| 7:30–8:30 | Arsitektur, teknologi, dan pagar pengaman AI |
+| 8:30–9:15 | Kelayakan: biaya per kotak, pemasangan bertahap, rencana lanjutan. Penutup dengan kalimat inti |
 
 Naskah lengkap setiap skenario ada di [belajar/11-demo-dan-tanya-jawab.md](belajar/11-demo-dan-tanya-jawab.md).
 
@@ -84,17 +88,19 @@ Kerangka yang disarankan (12–15 slide):
 2. Masalah di markas (IT dan OT)
 3. Solusi dalam satu kalimat
 4. Cara kerja (gambar: Suricata → pjs → MikroTik, AI, catatan bukti, dashboard)
-5. Fitur utama
-6. Arsitektur dan alur satu serangan ([belajar/09](belajar/09-tur-kode.md))
-7. Teknologi yang dipakai
-8. Tampilan dashboard (screenshot)
-9. Pagar pengaman: AI hanya menjelaskan, blokir dengan batas waktu, alamat yang tidak boleh diisolasi
-10. Catatan bukti anti-ubah (rantai hash, tanda tangan, kode buku jaga)
-11. Hasil uji di lab (angka nyata)
-12. Kelayakan: biaya, cara pemasangan di satuan, rencana lanjutan
-13. Batas purwarupa (jujur)
-14. Atribusi
-15. Tim
+5. **Tiga cara AI dipakai** (AI deteksi perilaku, penjelas, asisten piket) dan prinsip "AI menemukan dan menjelaskan, manusia memutuskan"
+6. **AI deteksi perilaku:** Isolation Forest, penilaian dua sisi, contoh alasan, hasil uji ([belajar/13](belajar/13-ai-deteksi-perilaku-dan-asisten.md))
+7. Fitur utama lainnya
+8. Arsitektur dan alur satu serangan ([belajar/09](belajar/09-tur-kode.md))
+9. Teknologi yang dipakai
+10. Tampilan dashboard (screenshot)
+11. Pagar pengaman: AI tidak bisa memblokir, blokir dengan batas waktu, alamat yang tidak boleh diisolasi, asisten hanya menjawab dari data
+12. Catatan bukti anti-ubah (rantai hash, tanda tangan, kode buku jaga)
+13. Hasil uji di lab (angka nyata)
+14. Kelayakan: biaya, cara pemasangan di satuan, rencana lanjutan
+15. Batas purwarupa (jujur), atribusi, dan tim
+
+Kriteria inovasi (25%) di Syarat dan Ketentuan bernama **"Inovasi Teknis Berbasis AI"**, jadi slide 5 dan 6 harus kuat dan jelas.
 
 Simpan juga sebagai PDF supaya tampilannya tidak berubah di komputer juri.
 

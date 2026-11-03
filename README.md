@@ -10,10 +10,14 @@ Purwarupa untuk **Kartika Cyber Hackathon 2026**, kategori **Penangkalan (Defens
 
 1. **Mengawasi** semua lalu lintas di jaringan kantor dan jaringan peralatan (genset, kamera, kunci pintu).
 2. **Mengenali** perangkat yang biasa ada, lalu memberi tahu kalau ada perangkat baru.
-3. **Mendeteksi** kejadian berbahaya, misalnya perintah asing ke genset, kamera yang mengirim rekaman ke luar, atau laptop yang diam-diam "melapor" ke alamat luar.
-4. **Bertindak cepat**: kejadian kritis pada peralatan langsung diisolasi lewat router MikroTik. Kejadian lain diputuskan oleh petugas jaga.
-5. **Menjelaskan** setiap kejadian dalam bahasa sehari-hari (AI lokal), lengkap dengan langkah SOP yang bisa dicentang.
-6. **Mencatat** semua kejadian dan tindakan di catatan bukti anti-ubah. Satu entri yang diubah atau dihapus langsung ketahuan.
+3. **Mendeteksi** kejadian berbahaya dengan aturan, misalnya perintah asing ke genset, kamera yang mengirim rekaman ke luar, atau laptop yang diam-diam "melapor" ke alamat luar.
+4. **Mengenali perilaku aneh dengan AI**: model machine learning (Isolation Forest) mempelajari kebiasaan normal setiap jaringan, lalu menandai perangkat yang tiba-tiba berubah perilaku. Serangan yang belum punya aturan pun bisa tertangkap.
+5. **Bertindak cepat**: kejadian kritis pada peralatan langsung diisolasi lewat router MikroTik. Kejadian lain, termasuk temuan AI, diputuskan oleh petugas jaga.
+6. **Menjelaskan** setiap kejadian dalam bahasa sehari-hari dengan AI lokal, lengkap dengan langkah SOP yang bisa dicentang.
+7. **Membantu piket**: petugas bisa bertanya ke kotak dengan bahasa sehari-hari, dan kotak menyusun laporan ganti piket. AI hanya menjawab dari data kotak.
+8. **Mencatat** semua kejadian dan tindakan di catatan bukti anti-ubah. Satu entri yang diubah atau dihapus langsung ketahuan.
+
+**AI menemukan dan menjelaskan, sedangkan aturan tetap dan manusia yang memutuskan.** Tidak ada AI yang bisa memblokir.
 
 ## Coba dalam 1 menit (tanpa alat apa pun)
 
@@ -25,15 +29,18 @@ cd pos-jaga-siber
 python -m pjs demo --putar --baru
 ```
 
-Buka **http://localhost:8080**. Dalam sekitar 40 detik, tiga skenario muncul di dashboard:
+Buka **http://localhost:8080**. Dalam sekitar 1 menit, empat skenario muncul di dashboard:
 
 | Skenario | Yang terjadi | Yang dilakukan kotak |
 |---|---|---|
-| Laptop asing mematikan genset | Perintah tulis ke genset dari perangkat yang bukan pengendali | Kritis: diisolasi otomatis, lalu dijelaskan |
-| Kamera mengirim data ke luar | Kamera gerbang mengunggah 48 MB ke alamat luar | Tinggi: dijelaskan, petugas memutuskan |
-| Laptop staf "melapor" teratur | Sambungan ke alamat luar setiap 2 detik, sangat teratur | Tinggi: dijelaskan, petugas memutuskan |
+| 1. Laptop asing mematikan genset | Perintah tulis ke genset dari perangkat yang bukan pengendali | Kritis: diisolasi otomatis, lalu dijelaskan |
+| 2. Kamera mengirim data ke luar | Kamera gerbang mengunggah 48 MB ke alamat luar | Tinggi: dijelaskan, petugas memutuskan. AI perilaku ikut memberi skor keanehan |
+| 3. Laptop staf "melapor" teratur | Sambungan ke alamat luar setiap 2 detik, sangat teratur | Tinggi: dijelaskan, petugas memutuskan |
+| 5. Kunci pintu memindai jaringan | Kunci pintu gudang senjata tiba-tiba menghubungi 14 alamat dalam 10 detik. Tidak ada aturan yang cocok | Ditangkap AI deteksi perilaku, tingkat tinggi, petugas memutuskan |
 
-Skenario keempat (catatan bukti diubah):
+Coba juga kotak **Asisten piket** di bawah rincian kejadian: tanyakan "Ada apa dengan Kamera Gerbang Utama?" atau tekan **Buat laporan** untuk laporan ganti piket.
+
+Skenario 4 (catatan bukti diubah):
 
 ```bash
 python lab/ubah_catatan.py
@@ -46,17 +53,17 @@ Panduan lengkap langkah demi langkah, termasuk mode rekam video, AI lokal, dan j
 ## Cara kerja singkat
 
 ```
-                     ┌──────────────────── Kotak Pos Jaga ────────────────────┐
- lalu lintas ──────► │ Suricata ──► eve.json ──► pjs (detector)               │
- (salinan dari       │                              │                          │
-  router/switch)     │                 ┌────────────┼──────────────┐           │
-                     │                 ▼            ▼              ▼           │
-                     │          MikroTik API   AI lokal      catatan bukti     │
-                     │          (isolasi)      (Ollama)      (rantai hash)     │
-                     │                 └────────────┼──────────────┘           │
-                     │                              ▼                          │
-                     │                  dashboard operator :8080               │
-                     └─────────────────────────────────────────────────────────┘
+                     ┌────────────────────── Kotak Pos Jaga ──────────────────────┐
+ lalu lintas ──────► │ Suricata ──► eve.json ──► pjs (detector) ◄── AI deteksi    │
+ (salinan dari       │  (aturan)                     │            perilaku (ML)   │
+  router/switch)     │                 ┌─────────────┼───────────────┐            │
+                     │                 ▼             ▼               ▼            │
+                     │          MikroTik API    AI lokal (Ollama)  catatan bukti  │
+                     │          (isolasi)       penjelas + asisten (rantai hash)  │
+                     │                 └─────────────┼───────────────┘            │
+                     │                               ▼                            │
+                     │                   dashboard operator :8080                 │
+                     └────────────────────────────────────────────────────────────┘
 ```
 
 Penjelasan lengkap dari nol ada di [docs/belajar](docs/belajar/00-mulai-di-sini.md).
@@ -108,6 +115,8 @@ Ditulis terus terang supaya tidak ada klaim berlebihan:
 - Langkah SOP di `pjs/playbook.py` adalah contoh dan harus diganti dengan SOP resmi satuan.
 - Belum diuji di jaringan satuan sungguhan. Uji coba baru di lab virtual.
 - Dashboard pusat (gabungan banyak kotak) belum dibuat.
+- Di demo, AI deteksi perilaku dilatih dari contoh normal buatan (`lab/contoh_riwayat_normal.jsonl`). Di markas, model belajar dari lalu lintas asli selama masa belajar, dan belum melatih ulang otomatis.
+- Penjelas dan asisten AI membutuhkan Ollama. Tanpa Ollama, kotak memakai penjelasan bawaan dan pencarian biasa.
 
 ## Atribusi
 
@@ -123,6 +132,7 @@ Karya ini dibuat selama periode Kartika Cyber Hackathon 2026. Komponen pihak ket
 | Python dan pustaka bawaannya | Python Software Foundation | Bahasa program kotak |
 | cryptography (opsional) | Python Cryptographic Authority | Tanda tangan Ed25519 kalau pustaka ini terpasang |
 | Algoritma Ed25519 | RFC 8032 (IETF) | `pjs/ed25519_pure.py` mengikuti algoritma referensinya |
+| Algoritma Isolation Forest | Liu, Ting, dan Zhou (2008) | `pjs/anomaly.py` menerapkannya dalam Python murni |
 | VirtualBox | Oracle | Lab virtual |
 
 Kode dan dokumentasi dikembangkan dengan bantuan asisten AI (Claude, buatan Anthropic).

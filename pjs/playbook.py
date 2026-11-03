@@ -67,6 +67,18 @@ PLAYBOOK = {
             "Laporkan ke penanggung jawab jaringan satuan sesuai SOP.",
         ],
     },
+    "perilaku_aneh": {
+        "title": "Perilaku tidak biasa: {src}",
+        "severity": "sedang",
+        "what": "AI deteksi perilaku menilai {src} bertingkah sangat berbeda dari kebiasaannya: {reason}. Pola ini tidak tertangkap aturan tetap, tetapi dikenali dari perbandingan dengan kebiasaan normal.",
+        "why": "Perangkat yang tiba-tiba berubah perilaku sering sudah dikuasai penyerang, misalnya dipakai untuk mencari sasaran lain di dalam markas.",
+        "steps": [
+            "Tanyakan ke petugas teknik apakah ada perawatan, pembaruan, atau perangkat baru pada {src}.",
+            "Kalau tidak ada penjelasan yang wajar, isolasi {src}.",
+            "Minta petugas teknik memeriksa {src} secara langsung.",
+            "Laporkan ke penanggung jawab jaringan satuan sesuai SOP.",
+        ],
+    },
     "perangkat_baru": {
         "title": "Ada perangkat baru di jaringan",
         "severity": "sedang",

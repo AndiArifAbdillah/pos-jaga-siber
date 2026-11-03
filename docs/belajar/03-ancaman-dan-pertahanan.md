@@ -10,6 +10,7 @@
 | Peralatan bocor keluar | Kamera mengunggah rekaman ke server luar | Aturan dasar: perangkat jaringan peralatan menghubungi alamat luar | `ot_ke_luar` |
 | Program jahat "melapor" | Laptop terinfeksi menghubungi pengendalinya setiap 20 detik | Aturan dasar: sambungan berulang dengan jarak waktu nyaris sama | `sinyal_berkala` |
 | Perangkat asing | Ada perangkat yang belum pernah terlihat | Aturan dasar: alamat baru setelah masa belajar | `perangkat_baru` |
+| Perangkat dikuasai, ancaman baru | Kunci pintu tiba-tiba menghubungi banyak perangkat lain untuk mencari sasaran | AI deteksi perilaku (machine learning, bab 13) | `perilaku_aneh` |
 | Pola serangan umum | Pemindaian, eksploit yang sudah dikenal | Aturan Suricata umum (ET Open) | `umum:<nomor>` |
 | Menghapus jejak | Orang dalam menghapus catatan kejadian | Rantai catatan bukti putus | (catatan bukti) |
 
@@ -38,7 +39,7 @@ IPS berdiri di tengah jalur. Kalau IPS macet atau salah, **jaringan ikut berhent
 Ada dua cara mengenali serangan:
 
 1. **Tanda tangan (signature):** mencari pola yang sudah diketahui, seperti mencocokkan sidik jari. Contohnya aturan Suricata. Kelebihannya tepat. Kekurangannya, serangan baru yang belum punya pola tidak tertangkap.
-2. **Perilaku (baseline / anomali):** mempelajari apa yang normal, lalu memperhatikan yang menyimpang. Contohnya "perangkat baru" dan "sinyal berkala". Kelebihannya bisa menangkap hal baru. Kekurangannya bisa salah alarm.
+2. **Perilaku (baseline / anomali):** mempelajari apa yang normal, lalu memperhatikan yang menyimpang. Contohnya "perangkat baru", "sinyal berkala", dan **AI deteksi perilaku** yang memakai machine learning (bab 13). Kelebihannya bisa menangkap hal baru. Kekurangannya bisa salah alarm.
 
 Kotak memakai keduanya.
 
