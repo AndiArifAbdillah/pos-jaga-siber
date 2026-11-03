@@ -31,7 +31,7 @@ Semua orang wajib membaca **00, 01, 09 bagian "Perjalanan satu serangan", dan 11
 | Orang | Fokus | Bab utama |
 |---|---|---|
 | A · jaringan, lab, perangkat | Lab, Suricata, MikroTik, lampu genset | 02, 03, 04, 05, lalu [PANDUAN-LAB](../PANDUAN-LAB.md) |
-| B · program, AI, tampilan, cerita | Kode Python, AI, catatan bukti, dashboard, proposal | 06, 07, 08, 09 lengkap, 10 |
+| B · program, AI, tampilan, cerita | Kode Python, AI, catatan bukti, dashboard, slide, video | 06, 07, 08, 09 lengkap, 10 |
 
 Bab yang bukan bagianmu tetap layak dibaca sekilas. Di depan juri, kalian berdua harus bisa menjawab pertanyaan tentang bagian mana pun.
 

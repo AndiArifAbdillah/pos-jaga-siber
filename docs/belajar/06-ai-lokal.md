@@ -106,7 +106,7 @@ Ini bagian yang paling sering ditanyakan juri. Jawabannya ada di desain:
 1. Pasang Ollama di laptopmu, unduh `qwen2.5:1.5b`, lalu jalankan `python -m pjs uji-ai`.
 2. Jalankan demo dengan Ollama menyala. Bandingkan penjelasan bawaan dan penjelasan AI untuk kejadian kamera. Mana yang lebih mudah dipahami petugas?
 3. Ubah `temperature` menjadi `1.0` di `explainer.py`, jalankan demo dua kali. Apa yang berubah?
-4. Coba model lain. Catat waktu jawab dan kualitas bahasa Indonesianya. Tulis hasilnya untuk proposal.
+4. Coba model lain. Catat waktu jawab dan kualitas bahasa Indonesianya. Tulis hasilnya untuk slide.
 
 ## Kamu paham kalau...
 

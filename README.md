@@ -2,7 +2,9 @@
 
 Penjaga jaringan untuk markas satuan. Kotak ini **bekerja mandiri**: tetap menjaga meskipun internet putus, dan data markas tidak dikirim keluar.
 
-Purwarupa untuk **Kartika Cyber Hackathon 2026**, kategori **Defensive Shield**.
+Purwarupa untuk **Kartika Cyber Hackathon 2026**, kategori **Penangkalan (Defensive Shield)**.
+
+> **Untuk Dewan Juri:** cara tercepat mencoba ada di bagian [Coba dalam 1 menit](#coba-dalam-1-menit-tanpa-alat-apa-pun). Cukup Python 3.10+, tanpa alat jaringan dan tanpa memasang pustaka tambahan.
 
 ## Apa yang dilakukan kotak ini
 
@@ -72,6 +74,7 @@ Penjelasan lengkap dari nol ada di [docs/belajar](docs/belajar/00-mulai-di-sini.
 | `docs/CARA-MENJALANKAN.md` | Cara menjalankan proyek di laptop biasa, langkah demi langkah |
 | `docs/PANDUAN-LAB.md` | Langkah menyusun lab virtual di satu laptop |
 | `docs/PEMBAGIAN-KERJA.md` | Pembagian kerja tim 2 orang sampai 14 November |
+| `docs/PENGUMPULAN-KARYA.md` | Lima berkas wajib menurut rulebook dan daftar periksa sebelum mengumpulkan |
 | `config.demo.json` | Konfigurasi demo (tanpa Suricata, tanpa MikroTik) |
 | `config.contoh.json` | Contoh konfigurasi untuk kotak sungguhan |
 
@@ -105,3 +108,21 @@ Ditulis terus terang supaya tidak ada klaim berlebihan:
 - Langkah SOP di `pjs/playbook.py` adalah contoh dan harus diganti dengan SOP resmi satuan.
 - Belum diuji di jaringan satuan sungguhan. Uji coba baru di lab virtual.
 - Dashboard pusat (gabungan banyak kotak) belum dibuat.
+
+## Atribusi
+
+Karya ini dibuat selama periode Kartika Cyber Hackathon 2026. Komponen pihak ketiga yang dipakai atau dibutuhkan:
+
+| Komponen | Pembuat | Dipakai untuk |
+|---|---|---|
+| Suricata | Open Information Security Foundation (OISF) | Membaca dan memeriksa lalu lintas jaringan. Dipasang terpisah, tidak disertakan di repositori ini |
+| Aturan ET Open | Emerging Threats | Aturan deteksi umum, diunduh lewat `suricata-update` |
+| RouterOS / Cloud Hosted Router (CHR) | MikroTik | Router dan pemblokir di lab |
+| Ollama | Ollama | Menjalankan model AI di dalam kotak |
+| Model Qwen2.5 | Tim Qwen, Alibaba Cloud | Model bahasa untuk penjelasan kejadian |
+| Python dan pustaka bawaannya | Python Software Foundation | Bahasa program kotak |
+| cryptography (opsional) | Python Cryptographic Authority | Tanda tangan Ed25519 kalau pustaka ini terpasang |
+| Algoritma Ed25519 | RFC 8032 (IETF) | `pjs/ed25519_pure.py` mengikuti algoritma referensinya |
+| VirtualBox | Oracle | Lab virtual |
+
+Kode dan dokumentasi dikembangkan dengan bantuan asisten AI (Claude, buatan Anthropic).

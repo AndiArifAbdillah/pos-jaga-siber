@@ -2,22 +2,33 @@
 
 ## 1. Kalimat inti
 
-Pakai kalimat yang sama di proposal, video, dan presentasi:
+Pakai kalimat yang sama di slide, video, dan presentasi:
 
 > **Pos Jaga Siber adalah penjaga jaringan markas yang bekerja mandiri, menjelaskan ancaman dalam bahasa sehari-hari, dan langsung mengamankan peralatan penting seperti genset dan kamera.**
 
 Hindari kata "offline". Pakai **"mandiri: tetap menjaga meskipun internet putus, dan data markas tidak keluar"**.
 
-## 2. Urutan presentasi (sekitar 5 menit)
+## 2. Dua kali tampil, dua aturan waktu
+
+| | Video (babak penyisihan) | Presentasi final (24 November) |
+|---|---|---|
+| Batas waktu | Maksimal **10 menit**, diunggah ke YouTube | **10 menit sudah termasuk** penjelasan, demo, **dan tanya jawab** |
+| Penonton | Juri menonton sendiri, bisa diulang | Juri di depan kalian, bertanya langsung |
+| Isi | Keempat skenario lengkap | Skenario genset dan catatan bukti saja. Skenario lain cukup disebut |
+
+Alur video ada di [PENGUMPULAN-KARYA.md](../PENGUMPULAN-KARYA.md). Alur presentasi final:
 
 | Menit | Isi | Yang ditunjukkan |
 |---|---|---|
 | 0:00 | **Masalah.** Markas punya genset, kamera, dan kunci pintu yang tersambung jaringan. Peralatan ini tidak bisa dipasangi antivirus. Petugas jaga bukan ahli siber | Foto/gambar markas, daftar peralatan |
-| 1:00 | **Demo skenario 1.** Laptop asing mencoba mematikan genset | Lampu genset, dashboard, MikroTik |
-| 2:30 | **Demo skenario 2–4** singkat | Kamera bocor, sinyal berkala, catatan diubah |
-| 3:30 | **Pembeda** | Mandiri, bahasa sehari-hari, peralatan dipisah, catatan bukti |
-| 4:15 | **Kelayakan** | Perkiraan biaya per kotak, hasil uji lab, rencana pemasangan bertahap |
-| 4:45 | Penutup: kalimat inti | |
+| 1:00 | **Solusi.** Kalimat inti dan gambar cara kerja | Slide cara kerja |
+| 1:30 | **Demo skenario 1.** Laptop asing mencoba mematikan genset | Lampu genset, dashboard, MikroTik |
+| 4:00 | **Demo skenario 4.** Catatan bukti diubah, lalu ketahuan | Layar merah, kode buku jaga |
+| 4:45 | **Pembeda.** Kamera bocor dan sinyal berkala cukup disebut sambil menunjukkan screenshot | Mandiri, bahasa sehari-hari, peralatan dipisah, catatan bukti |
+| 5:30 | **Kelayakan dan penutup** dengan kalimat inti | Biaya per kotak, hasil uji lab, rencana pemasangan bertahap |
+| 6:30 | **Tanya jawab** (sekitar 3,5 menit) | Tabel di bagian 5 |
+
+Kalau waktu tanya jawab terpotong, juri tidak sempat melihat kekuatan kalian. Latih bagian 0:00–6:30 sampai **tidak lebih dari 6,5 menit**.
 
 ## 3. Naskah demo
 
