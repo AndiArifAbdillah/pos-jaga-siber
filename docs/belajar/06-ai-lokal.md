@@ -40,7 +40,11 @@ Pilihan model (ukuran perkiraan, cek di situs Ollama untuk angka terbaru):
 | `llama3.2:3b` | sekitar 2 GB | Jawaban lebih rapi, lebih lambat |
 | `gemma3:4b` | sekitar 3 GB | Bahasa Indonesia lebih baik, butuh RAM lebih |
 
-Model diganti lewat `ollama.model` di berkas konfigurasi. Uji dengan `python -m pjs uji-ai`.
+Model diganti lewat `ollama.model` di berkas konfigurasi, atau untuk demo lewat `--model` (misalnya `python -m pjs demo --putar --baru --model qwen3.5-4b:latest`). Uji dengan `python -m pjs uji-ai`.
+
+Saat kotak menyala, `Explainer.start` memeriksa apakah model sudah diunduh, lalu **memuat model ke memori** di latar belakang (`_warm_up`). Ini penting untuk demo: permintaan pertama ke model yang belum dimuat bisa butuh 40 detik lebih, sedangkan setelah dimuat cukup beberapa detik.
+
+Perintah ke AI meminta **bahasa Indonesia yang sederhana dan sopan, seperti laporan petugas kepada atasan, tanpa bahasa gaul** (konstanta `STYLE` di `explainer.py`). Aturan ini ditambahkan setelah uji pertama, karena model sempat menjawab dengan gaya percakapan, misalnya "matiin genset".
 
 ## 4. Cara kotak memakai AI
 

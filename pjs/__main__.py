@@ -76,6 +76,7 @@ def main(argv=None):
     p_demo.add_argument("--putar", action="store_true", help="sekalian memutar contoh skenario otomatis")
     p_demo.add_argument("--baru", action="store_true", help="hapus data demo lama dan mulai dari nol")
     p_demo.add_argument("--port", type=int, help="ganti port dashboard")
+    p_demo.add_argument("--model", help="nama model Ollama yang dipakai, misalnya qwen3.5-4b:latest")
 
     p_play = sub.add_parser("putar", help="memutar contoh catatan Suricata")
     p_play.add_argument("berkas", nargs="?", default=str(DEMO_SAMPLE))
@@ -88,7 +89,8 @@ def main(argv=None):
     p_code = sub.add_parser("cek-kode", help="mencocokkan kode buku jaga")
     p_code.add_argument("kode")
     sub.add_parser("uji-mikrotik", help="mencoba sambungan ke MikroTik")
-    sub.add_parser("uji-ai", help="mencoba penjelas AI")
+    p_ai = sub.add_parser("uji-ai", help="mencoba penjelas AI")
+    p_ai.add_argument("--model", help="nama model Ollama yang dicoba")
 
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(asctime)s %(name)s: %(message)s")
@@ -97,6 +99,8 @@ def main(argv=None):
         cfg = config_mod.load(args.config or DEMO_CONFIG)
         if args.port:
             cfg.raw["web"]["port"] = args.port
+        if args.model:
+            cfg.raw["ollama"]["model"] = args.model
         if args.baru and cfg.data_dir.exists():
             if cfg.data_dir.name != "data-demo":
                 parser.error("--baru hanya boleh menghapus folder data-demo.")
@@ -154,18 +158,28 @@ def main(argv=None):
         return 0
 
     if args.command == "uji-ai":
-        from .explainer import Explainer
+        import time
 
-        explainer = Explainer({**cfg["ollama"], "enabled": True}, on_ready=None, on_failed=None)
-        if not explainer.ping():
+        from .explainer import STYLE, Explainer
+
+        model = args.model or cfg["ollama"]["model"]
+        explainer = Explainer({**cfg["ollama"], "enabled": True, "model": model}, on_ready=None, on_failed=None)
+        models = explainer.list_models()
+        if models is None:
             print(f"Ollama tidak bisa dihubungi di {explainer.url}")
             return 1
+        if not explainer.has_model(models):
+            print(f"Model {model} belum diunduh. Model yang ada: {', '.join(models) or '(belum ada)'}")
+            print(f"Unduh dengan: ollama pull {model}   atau pakai --model <nama model yang ada>")
+            return 1
         prompt = (
-            'Jawab hanya dengan JSON {"apa": "...", "kenapa": "..."}. '
+            f'Jawab hanya dengan JSON {{"apa": "...", "kenapa": "..."}}. {STYLE} '
             "Kejadian: laptop tak dikenal mengirim perintah mematikan genset markas."
         )
-        print(f"Bertanya ke model {explainer.model}...")
+        print(f"Bertanya ke model {explainer.model} (permintaan pertama bisa lama karena model sedang dimuat)...")
+        started = time.time()
         result = explainer.ask(prompt)
+        print(f"Selesai dalam {time.time() - started:.0f} detik.")
         print("Apa    :", result["what"])
         print("Kenapa :", result["why"])
         return 0

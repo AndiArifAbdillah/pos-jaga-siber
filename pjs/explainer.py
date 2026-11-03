@@ -24,6 +24,12 @@ STATUS_LABEL = {
 }
 
 
+STYLE = (
+    "Pakai bahasa Indonesia yang sederhana, jelas, dan sopan, seperti laporan petugas kepada atasan. "
+    'Jangan memakai bahasa gaul atau singkatan percakapan seperti "gak", "nggak", "udah", atau "matiin".'
+)
+
+
 def template(incident, names):
     entry = playbook.get(incident["kind"])
     return {
@@ -42,28 +48,38 @@ def steps(kind, names):
 def build_prompt(incident, names, zones):
     facts = incident.get("facts") or {}
     step_lines = "\n".join(f"{i}. {s['text']}" for i, s in enumerate(incident.get("steps") or [], start=1))
-    note = facts.get("signature") or "-"
+    lines = [
+        f"- Judul: {incident['title']}",
+        f"- Tingkat bahaya: {incident['severity']}",
+        f"- Dari: {names['src']} ({ZONE_LABEL.get(zones[0], 'luar markas')})",
+    ]
+    # Kejadian tanpa tujuan (perangkat baru, perilaku tidak biasa) tidak boleh diberi
+    # baris "Ke", supaya AI tidak mengira ada sambungan ke luar markas.
+    if incident.get("dst_ip"):
+        lines.append(f"- Ke: {names['dst']} ({ZONE_LABEL.get(zones[1], 'luar markas')})")
+    lines += [
+        f"- Terjadi: {incident.get('count', 1)} kali",
+        f"- Status: {STATUS_LABEL.get(incident.get('status'), incident.get('status'))}",
+    ]
+    if facts.get("signature"):
+        lines.append(f"- Catatan sensor: {facts['signature']}")
     if facts.get("ml_score") is not None:
-        note += f"\n- Catatan AI deteksi perilaku: skor keanehan {facts['ml_score']} dari 1, karena perangkat {facts.get('ml_reason', '-')}"
+        lines.append(f"- Temuan AI deteksi perilaku (skor keanehan {facts['ml_score']} dari 1): perangkat {facts.get('ml_reason', '-')}")
+    data = "\n".join(lines)
     return f"""Kamu membantu petugas jaga di markas satuan TNI AD. Petugas ini bukan ahli komputer.
-Tulis penjelasan singkat tentang kejadian jaringan di bawah ini dalam bahasa Indonesia sehari-hari.
+Tulis penjelasan singkat tentang kejadian jaringan di bawah ini.
+{STYLE}
 
 Aturan:
 - Jangan memakai istilah teknis seperti alamat IP, port, protokol, Modbus, malware, atau payload. Sebut perangkat dengan namanya.
 - "apa": satu atau dua kalimat tentang apa yang terjadi.
-- "kenapa": satu atau dua kalimat tentang kenapa ini berbahaya bagi markas.
+- "kenapa": satu atau dua kalimat tentang bahaya bagi markas kalau kejadian seperti ini tidak ditangani.
 - Jangan menulis langkah tindakan. Langkah sudah ditetapkan SOP di bawah.
 - Jangan menambah fakta yang tidak ada di data.
 Jawab hanya dengan JSON: {{"apa": "...", "kenapa": "..."}}
 
 Data kejadian:
-- Judul: {incident['title']}
-- Tingkat bahaya: {incident['severity']}
-- Dari: {names['src']} ({ZONE_LABEL.get(zones[0], 'luar markas')})
-- Ke: {names['dst']} ({ZONE_LABEL.get(zones[1], 'luar markas')})
-- Terjadi: {incident.get('count', 1)} kali
-- Status: {STATUS_LABEL.get(incident.get('status'), incident.get('status'))}
-- Catatan sensor: {note}
+{data}
 
 Langkah SOP yang akan dibaca petugas:
 {step_lines}
@@ -88,19 +104,53 @@ class Explainer:
     def start(self):
         if not self.enabled:
             return
-        self.state = "siap" if self.ping() else "tidak_tersambung"
+        models = self.list_models()
+        if models is None:
+            self.state = "tidak_tersambung"
+        elif not self.has_model(models):
+            self.state = "model_tidak_ada"
+        else:
+            self.state = "memuat"
+            threading.Thread(target=self._warm_up, name="pemanas-ai", daemon=True).start()
         threading.Thread(target=self._worker, name="penjelas-ai", daemon=True).start()
 
-    def ping(self):
+    @property
+    def usable(self):
+        """AI boleh dicoba. Model yang belum diunduh tidak dicoba sama sekali."""
+        return self.enabled and self.state != "model_tidak_ada"
+
+    def list_models(self):
+        """Nama model yang sudah diunduh di Ollama, atau None kalau Ollama tidak bisa dihubungi."""
         try:
             with urllib.request.urlopen(self.url + "/api/tags", timeout=2) as resp:
-                return resp.status == 200
+                data = json.loads(resp.read().decode("utf-8"))
+        except (OSError, ValueError, urllib.error.URLError):
+            return None
+        return [m.get("name", "") for m in data.get("models", [])]
+
+    def has_model(self, models):
+        wanted = self.model if ":" in self.model else self.model + ":latest"
+        return wanted in models
+
+    def ping(self):
+        return self.list_models() is not None
+
+    def _warm_up(self):
+        """Muat model ke memori sejak kotak menyala. Permintaan pertama ke model
+        yang belum dimuat bisa butuh puluhan detik; setelah dimuat cukup beberapa detik."""
+        body = json.dumps({"model": self.model, "prompt": "", "keep_alive": "30m"}).encode("utf-8")
+        req = urllib.request.Request(self.url + "/api/generate", data=body, headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                resp.read()
+            if self.state == "memuat":
+                self.state = "siap"
         except (OSError, urllib.error.URLError):
-            return False
+            self.state = "tidak_tersambung"
 
     def request(self, incident_id, prompt):
         """Masukkan ke antrean. Hasil `True` kalau permintaan diterima."""
-        if not self.enabled:
+        if not self.usable:
             return False
         self._queue.put((incident_id, prompt))
         return True
@@ -124,6 +174,7 @@ class Explainer:
             "prompt": prompt,
             "stream": False,
             "format": "json",
+            "keep_alive": "30m",
             "options": {"temperature": 0.2},
         }).encode("utf-8")
         req = urllib.request.Request(self.url + "/api/generate", data=body, headers={"Content-Type": "application/json"})

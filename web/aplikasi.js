@@ -139,6 +139,8 @@ function renderChips() {
     mati: ["AI: penjelasan bawaan", ""],
     tidak_tersambung: ["AI lokal: tidak tersambung", "warn"],
     memeriksa: ["AI lokal: memeriksa", ""],
+    memuat: [`AI lokal: memuat model ${d.links.ai_model}`, ""],
+    model_tidak_ada: [`AI lokal: model ${d.links.ai_model} belum diunduh`, "warn"],
   }[d.links.ai] || [`AI: ${d.links.ai}`, ""];
   setChip("chip-ai", ai[0], ai[1]);
 

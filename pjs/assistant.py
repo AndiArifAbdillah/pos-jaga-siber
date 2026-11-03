@@ -17,7 +17,7 @@ import re
 import time
 from datetime import datetime
 
-from .explainer import _clean
+from .explainer import STYLE, _clean
 
 SEVERITY_LABEL = {"kritis": "Kritis", "tinggi": "Tinggi", "sedang": "Sedang", "rendah": "Rendah"}
 STATUS_LABEL = {
@@ -109,11 +109,13 @@ class ShiftAssistant:
         known_ids = {i for i, _, _ in incidents}
         result = None
         explainer = self.app.explainer
-        if explainer.enabled:
+        if explainer.usable:
             try:
                 answer = explainer.generate(self._ask_prompt(question, incidents, devices), timeout=90)
                 text = _clean(answer.get("jawaban", ""), limit=900)
                 sources = [s.upper() for s in answer.get("sumber", []) if isinstance(s, str)]
+                if "tidak menemukan" in text.lower():
+                    sources = []
                 if text:
                     result = {
                         "ok": True, "mode": "ai", "model": explainer.model, "answer": text,
@@ -136,8 +138,9 @@ class ShiftAssistant:
 Jawab pertanyaan petugas HANYA berdasarkan DATA di bawah.
 
 Aturan:
-- Pakai bahasa Indonesia sehari-hari, tanpa istilah teknis, paling banyak 5 kalimat.
-- Kalau jawabannya tidak ada di DATA, jawab: "Saya tidak menemukan datanya di catatan kotak."
+- {STYLE}
+- Tanpa istilah teknis, paling banyak 5 kalimat.
+- Kalau jawabannya tidak ada di DATA, jawab: "Saya tidak menemukan datanya di catatan kotak." dengan "sumber": [].
 - Sebut nomor kejadian (misalnya PJS-0002) yang kamu pakai.
 - Jangan mengarang kejadian, waktu, atau perangkat yang tidak ada di DATA.
 - Jangan menyarankan tindakan selain yang sudah tertulis di DATA.
@@ -187,7 +190,7 @@ PERTANYAAN PETUGAS: {question}
         summary = self._template_summary(hours, incidents, counts, waiting, isolated)
         mode, model = "templat", None
         explainer = self.app.explainer
-        if explainer.enabled and incidents:
+        if explainer.usable and incidents:
             try:
                 answer = explainer.generate(self._report_prompt(hours, incidents, waiting, isolated, integrity), timeout=90)
                 text = _clean(answer.get("ringkasan", ""), limit=700)
@@ -241,7 +244,8 @@ PERTANYAAN PETUGAS: {question}
     def _report_prompt(self, hours, incidents, waiting, isolated, integrity):
         data = "\n".join(self._incident_line(i) for i in incidents)
         return f"""Kamu asisten petugas jaga di markas satuan TNI AD.
-Tulis ringkasan ganti piket untuk {hours} jam terakhir, 2 sampai 4 kalimat, bahasa Indonesia sehari-hari, tanpa istilah teknis.
+Tulis ringkasan ganti piket untuk {hours} jam terakhir, 2 sampai 4 kalimat, tanpa istilah teknis.
+{STYLE}
 Sebut hal paling penting dulu, lalu apa yang masih harus ditindaklanjuti piket berikutnya.
 Jangan mengarang kejadian atau angka yang tidak ada di DATA.
 Jawab hanya dengan JSON: {{"ringkasan": "..."}}

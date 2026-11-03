@@ -59,6 +59,14 @@ class AssistantTest(unittest.TestCase):
         self.assertIn("HANYA berdasarkan DATA", prompts[0])
         self.assertIn("Genset utama", prompts[0])
 
+    def test_not_found_answer_has_no_sources(self):
+        self.app.explainer.enabled = True
+        self.app.explainer.generate = lambda prompt, timeout=None: {
+            "jawaban": "Saya tidak menemukan datanya di catatan kotak.", "sumber": [self.ids()["ot_tulis"]],
+        }
+        result = self.app.assistant.ask("berapa suhu ruang server?")
+        self.assertEqual(result["sources"], [])
+
     def test_ai_failure_falls_back_to_search(self):
         def broken(prompt, timeout=None):
             raise OSError("Ollama mati")

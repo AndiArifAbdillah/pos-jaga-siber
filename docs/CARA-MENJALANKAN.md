@@ -154,7 +154,21 @@ Tanpa AI, dashboard tetap menampilkan penjelasan bawaan. Untuk mencoba AI:
    python -m pjs --config config.demo.json uji-ai
    ```
 
-4. Jalankan ulang demo. Tanda di kanan atas dashboard berubah menjadi **"AI lokal: siap"**. Penjelasan kejadian ditulis ulang oleh AI, dan asisten piket menjawab dengan bahasa sehari-hari, bukan sekadar hasil pencarian.
+4. Jalankan ulang demo. Tanda di kanan atas dashboard berubah menjadi **"AI lokal: memuat model"**, lalu **"AI lokal: siap"**. Penjelasan kejadian ditulis ulang oleh AI, dan asisten piket menjawab dengan bahasa sederhana, bukan sekadar hasil pencarian.
+
+**Kalau di laptopmu sudah ada model lain**, tidak perlu mengunduh `qwen2.5:1.5b`. Lihat nama modelnya dengan `ollama list`, lalu pakai pilihan `--model`:
+
+```bash
+python -m pjs --config config.demo.json uji-ai --model qwen3.5-4b:latest
+```
+
+```bash
+python -m pjs demo --putar --baru --model qwen3.5-4b:latest
+```
+
+Kalau model yang diminta belum diunduh, `uji-ai` menyebutkan model apa saja yang tersedia, dan dashboard menulis "AI lokal: model … belum diunduh".
+
+Permintaan pertama ke model bisa butuh puluhan detik karena model sedang dimuat ke memori. Karena itu kotak memuat model sejak dinyalakan. Setelah termuat, satu jawaban biasanya hanya beberapa detik. Saat diuji dengan `qwen3.5-4b`, tiga permintaan AI selesai dalam total sekitar 9 detik.
 
 AI deteksi perilaku **tidak** butuh Ollama. Ia sudah aktif di mode demo tanpa memasang apa pun.
 
