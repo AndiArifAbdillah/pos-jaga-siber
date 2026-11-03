@@ -25,10 +25,10 @@ Disusun dari Rulebook Kartika Cyber Hackathon 2026 (bagian D, G, H, I). Kalau ad
 | No | Berkas | Ketentuan rulebook | Penanggung jawab |
 |---|---|---|---|
 | 1 | Link karya | Link **publik** yang bisa dibuka dan dicoba Dewan Juri | B |
-| 2 | Thumbnail | 1200 × 630 px, JPG/PNG/WebP, maksimal 500 KB | B |
-| 3 | Screenshot | Tangkapan layar tampilan karya, maksimal 5 gambar | B (1–4), A (5) |
-| 4 | Video | Menjelaskan karya, manfaat, dan cara kerjanya. Maksimal 10 menit, diunggah ke YouTube | A menjalankan lab, B membawakan dan menyunting |
-| 5 | Slide penjelasan | Fitur, arsitektur, teknologi yang dipakai, dan penjelasan umum karya | B, bagian teknis oleh A |
+| 2 | Thumbnail | 1200 × 630 px, JPG/PNG/WebP, maksimal 500 KB | C |
+| 3 | Screenshot | Tangkapan layar tampilan karya, maksimal 5 gambar | C (1–4), A (5) |
+| 4 | Video | Menjelaskan karya, manfaat, dan cara kerjanya. Maksimal 10 menit, diunggah ke YouTube | A menjalankan lab, B menjaga kotak dan AI, C membawakan dan menyunting |
+| 5 | Slide penjelasan | Fitur, arsitektur, teknologi yang dipakai, dan penjelasan umum karya | C, bagian teknis oleh A dan B |
 
 ### 1. Link karya
 

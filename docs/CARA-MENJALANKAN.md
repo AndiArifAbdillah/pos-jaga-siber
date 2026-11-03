@@ -31,7 +31,7 @@ Kalau proyek sudah ada di laptopmu, cukup masuk ke foldernya. Contoh di Windows:
 cd "D:\WORK\HAckthon cyber\pos-jaga-siber"
 ```
 
-Setiap kali mulai kerja, ambil perubahan terbaru dari pasanganmu:
+Setiap kali mulai kerja, ambil perubahan terbaru dari anggota tim lain:
 
 ```bash
 git pull
