@@ -82,7 +82,7 @@ Naskah lengkap setiap skenario ada di [belajar/11-demo-dan-tanya-jawab.md](belaj
 
 ### 5. Slide penjelasan
 
-Kerangka yang disarankan (12–15 slide):
+Kerangka yang disarankan (12–16 slide):
 
 1. Judul: Pos Jaga Siber, nama tim, kategori Penangkalan
 2. Masalah di markas (IT dan OT)
@@ -97,8 +97,9 @@ Kerangka yang disarankan (12–15 slide):
 11. Pagar pengaman: AI tidak bisa memblokir, blokir dengan batas waktu, alamat yang tidak boleh diisolasi, asisten hanya menjawab dari data
 12. Catatan bukti anti-ubah (rantai hash, tanda tangan, kode buku jaga)
 13. Hasil uji di lab (angka nyata)
-14. Kelayakan: biaya, cara pemasangan di satuan, rencana lanjutan
-15. Batas purwarupa (jujur), atribusi, dan tim
+14. Selaras dengan visi dan misi Satsiber TNI (melindungi infrastruktur informasi kritis TNI)
+15. Kelayakan: biaya, cara pemasangan di satuan, rencana lanjutan
+16. Batas purwarupa (jujur), atribusi, dan tim
 
 Kriteria inovasi (25%) di Syarat dan Ketentuan bernama **"Inovasi Teknis Berbasis AI"**, jadi slide 5 dan 6 harus kuat dan jelas.
 

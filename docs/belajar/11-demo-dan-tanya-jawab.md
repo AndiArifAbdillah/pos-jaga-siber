@@ -93,6 +93,7 @@ Ketik di kotak Asisten piket: *"Ada apa dengan Kamera Gerbang Utama?"* Tunjukkan
 | "Kenapa Isolation Forest, bukan deep learning?" | Tidak butuh data serangan berlabel (yang memang tidak dimiliki markas), cukup data normal. Ringan, berjalan di mini PC tanpa kartu grafis, dan alasannya bisa dijelaskan ke petugas |
 | "Bagaimana AI tidak mengarang jawaban?" | Asisten mencari data dulu, lalu AI hanya boleh menjawab dari data itu. Nomor kejadian yang disebut AI dicek, yang tidak ada dibuang. Di laporan piket, daftar kejadian dan angka diambil langsung dari data, AI hanya menulis ringkasannya |
 | "Ini kan cuma Suricata ditambah AI?" | Suricata hanya "mata". Yang kami bangun adalah apa yang terjadi setelahnya: pengenalan peralatan OT, keputusan otomatis yang aman untuk genset, penjelasan untuk petugas non-ahli, dan catatan bukti. Produk serupa dibuat untuk analis ahli di ruang kendali. Ini dibuat untuk petugas jaga di markas |
+| "Apa hubungannya dengan tugas satuan siber TNI?" | Visi Satsiber TNI adalah melindungi infrastruktur informasi kritis TNI, dan genset, kamera, serta kunci pintu gudang senjata adalah bagian dari itu. Karya ini juga mendukung misinya: menangkal perubahan tanpa izin (misi 1–2), membantu petugas yang bukan ahli (misi 4), dibangun di atas perangkat lunak terbuka (misi 5), memakai SOP (misi 6), dan menjaga kerahasiaan, keutuhan, serta ketersediaan (misi 7). Koordinasi antarsatuan (misi 3 dan 8) baru rencana lanjutan, lewat dashboard pusat. Sebut "Satsiber TNI" untuk visi-misi ini; penyelenggara lomba adalah Pussiberad |
 | "Kenapa tidak pakai produk komersial?" | Produk komersial umumnya butuh langganan dan internet, serta mengirim data ke luar negeri. Kotak ini mandiri, berbahasa Indonesia, dan bisa dirawat sendiri |
 | "Kenapa offline? Serangan kan dari internet?" | Kotak tetap mengawasi lalu lintas internet. "Mandiri" artinya kotak tidak butuh internet untuk bekerja. Penyerang sering memutus internet lebih dulu, banyak serangan datang dari dalam (flashdisk, laptop tamu), dan data militer tidak boleh keluar |
 | "Bagaimana kalau AI salah?" | AI hanya menjelaskan. AI tidak bisa memblokir dan tidak menulis langkah. Langkah dari SOP, blokir dari aturan tetap. Kalau AI mati, penjelasan bawaan tetap tampil |
@@ -112,6 +113,7 @@ Ketik di kotak Asisten piket: *"Ada apa dengan Kamera Gerbang Utama?"* Tunjukkan
 - "AI-nya memutuskan." AI tidak memutuskan apa pun.
 - "AI-nya pasti benar" atau "akurasinya 100%". Sebut angka yang benar-benar diuji, dan sebut bahwa data demo adalah data buatan.
 - "Blockchain" tanpa penjelasan.
+- "Kode kami open source." Lisensi kode kami "Hak Cipta Dilindungi". Yang benar: "dibangun di atas perangkat lunak terbuka".
 - Klaim uji coba yang belum dilakukan.
 
 ## Latihan
