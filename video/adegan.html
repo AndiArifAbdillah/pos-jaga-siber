@@ -171,6 +171,35 @@ html, body { margin: 0; background: #000; }
 #solusi .gelembung { left: 1470px; top: 560px; width: 380px; padding: 18px 22px; font: 500 22px/1.4 var(--badan); border-color: rgba(188,204,134,.5); }
 #solusi .lbl-garis { font: 600 21px var(--judul); color: var(--muted); letter-spacing: .06em; }
 
+/* --- adegan: suricata --- */
+#suricata .sr-lbl { left: 120px; top: 380px; }
+#suricata .pkt { position: absolute; left: 0; top: 0; white-space: nowrap; font: 700 19px var(--judul); letter-spacing: .04em; padding: 6px 12px; border-radius: 8px;
+  background: rgba(188,204,134,.14); border: 1px solid var(--accent); color: var(--accent); offset-rotate: 0deg; opacity: 0;
+  animation: alir var(--dur, 2.6s) linear var(--t, 0s) infinite, tampil .3s ease var(--t, 0s) forwards; }
+#suricata .pkt.merah { background: rgba(59,26,23,.95); border-color: var(--crit); color: var(--crit); z-index: 3;
+  animation: alir var(--dur, 2.2s) linear var(--t, 0s) 1 both, tampil .2s ease var(--t, 0s) forwards, keluar .3s ease var(--u, 9999s) forwards; }
+#suricata .sr-kartu { left: 720px; top: 180px; width: 480px; height: 330px; padding: 24px 26px; text-align: center; border: 2px solid var(--accent);
+  animation: muncul .8s ease var(--t) both, denyut-merah 1.2s ease-in-out var(--t2) 2; }
+#suricata .sr-kartu .ikon { width: 110px; height: 110px; color: var(--accent); }
+#suricata .sr-kartu h3 { margin: 6px 0 2px; font: 700 52px var(--judul); letter-spacing: .1em; }
+#suricata .sr-kartu .cips { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
+#suricata .sr-kartu .pil { font-size: 15px; padding: 6px 10px; white-space: nowrap; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line-2); }
+#suricata .cocok { left: 860px; top: 128px; --in: skala; }
+#suricata .aturan { left: 720px; top: 548px; width: 480px; padding: 20px 26px; }
+#suricata .aturan h4 { margin: 0 0 12px; font: 700 24px var(--judul); color: var(--accent); }
+#suricata .aturan .baris { margin-bottom: 12px; }
+#suricata .aturan code { display: block; font: 15px var(--mono); color: var(--muted); }
+#suricata .aturan span { font: 600 21px var(--badan); }
+#suricata .eve { left: 1280px; top: 190px; width: 540px; height: 300px; background: #0a0d09; border: 1px solid var(--line-2); border-radius: 14px; overflow: hidden; }
+#suricata .eve .bar { height: 40px; background: #1b2118; display: flex; align-items: center; padding: 0 16px; font: 600 17px var(--badan); color: var(--muted); }
+#suricata .eve pre { margin: 0; padding: 20px 22px; font: 19px/1.65 var(--mono); color: #d7ddcf; }
+#suricata .pjs { left: 1280px; top: 540px; width: 540px; padding: 22px 26px; border-color: rgba(188,204,134,.6); }
+#suricata .pjs .lbl { font-size: 27px; }
+#suricata .pjs .cips { display: flex; gap: 10px; margin-top: 14px; }
+#suricata .pjs .pil { font-size: 18px; padding: 7px 12px; }
+#suricata .batas { left: 0; right: 0; top: 852px; display: flex; justify-content: center; gap: 22px; }
+#suricata .batas .cip { font-size: 24px; padding: 10px 20px; }
+
 /* --- adegan: lab genset --- */
 #lab-genset .terminal { left: 110px; top: 190px; width: 860px; height: 560px; background: #0a0d09; border: 1px solid var(--line-2); border-radius: 14px; overflow: hidden; }
 #lab-genset .terminal .bar { height: 40px; background: #1b2118; display: flex; align-items: center; padding: 0 16px; gap: 8px; font: 600 17px var(--badan); color: var(--muted); }
@@ -358,6 +387,51 @@ svg .a, svg .garis { transform-box: fill-box; transform-origin: center; }
     <div class="abs menjaga">
       <span class="pil hijau a" style="--in:skala; --t:calc(var(--b4) + 2.4s)">TETAP MENJAGA</span>
       <span class="cip hijau a" style="--t:calc(var(--b4) + 3.4s)">Data markas tidak keluar</span>
+    </div>
+  </section>
+
+  <!-- ============ SURICATA ============ -->
+  <section class="adegan" id="suricata">
+    <div class="abs sr-lbl a" style="--t:.3s"><div class="lbl">Lalu lintas jaringan</div><div class="kecil">salinan dari router</div></div>
+    <div class="abs" style="left:0;top:0;width:1920px;height:1080px">
+      <div class="pkt" style="offset-path:path('M130 470 L 712 470'); --t:.8s">HTTPS</div>
+      <div class="pkt" style="offset-path:path('M130 470 L 712 470'); --t:1.45s">DNS</div>
+      <div class="pkt" style="offset-path:path('M130 470 L 712 470'); --t:2.1s">SMB</div>
+      <div class="pkt" style="offset-path:path('M130 470 L 712 470'); --t:2.75s">Modbus baca</div>
+      <div class="pkt merah" style="offset-path:path('M130 520 L 712 520'); --t:calc(var(--b1) + 1.2s); --u:calc(var(--b1) + 3.5s)">Modbus: matikan genset</div>
+    </div>
+    <div class="abs sr-kartu kartu" style="--t:.4s; --t2:calc(var(--b1) + 3.3s)">
+      <svg class="ikon"><use href="#i-mata"/></svg>
+      <h3>SURICATA</h3>
+      <div class="kecil">pemeriksa paket jaringan</div>
+      <div class="cips"><span class="pil a" style="--t:calc(var(--b0) + 3s)">Gratis &amp; terbuka</span><span class="pil a" style="--t:calc(var(--b0) + 4.2s)">Yayasan OISF</span><span class="pil a" style="--t:calc(var(--b0) + 5.4s)">Dipakai luas</span></div>
+    </div>
+    <div class="abs cocok a" style="--t:calc(var(--b1) + 3.4s); --u:calc(var(--b2) + 1.5s)"><span class="pil merah">COCOK DENGAN ATURAN!</span></div>
+    <div class="abs aturan kartu a" style="--t:calc(var(--b1) + .3s)">
+      <h4>Buku aturan · ciri-ciri serangan</h4>
+      <div class="baris a" style="--t:calc(var(--b1) + 1s)"><code>alert modbus !$PENGENDALI -&gt; $GENSET (modbus: access write)</code><span>Perintah tulis ke genset dari perangkat asing → <b class="merah-t">kritis</b></span></div>
+      <div class="baris a" style="--t:calc(var(--b1) + 2s)"><span>Percobaan masuk Telnet ke peralatan → <b style="color:var(--high)">tinggi</b></span></div>
+      <div class="baris a" style="--t:calc(var(--b1) + 2.8s)"><span class="kecil">+ ribuan aturan umum gratis (ET Open)</span></div>
+    </div>
+    <svg class="abs" width="1920" height="1080" style="left:0;top:0">
+      <path class="garis" pathLength="1000" d="M1200 340 L 1280 340" stroke="#bccc86" stroke-width="4" fill="none" style="--t:calc(var(--b2) + .2s)"/>
+      <path class="garis" pathLength="1000" d="M1550 490 L 1550 540" stroke="#bccc86" stroke-width="4" fill="none" style="--t:calc(var(--b2) + 2.6s)"/>
+    </svg>
+    <div class="abs eve a" style="--t:calc(var(--b2) + .3s)">
+      <div class="bar">Catatan Suricata · eve.json</div>
+      <pre><span class="a" style="--in:tampil; --t:calc(var(--b2) + .8s)">{"event_type": "alert",</span>
+<span class="a" style="--in:tampil; --t:calc(var(--b2) + 1.2s)"> "src_ip":  "10.10.0.66",</span>
+<span class="a" style="--in:tampil; --t:calc(var(--b2) + 1.6s)"> "dest_ip": "10.20.0.10",</span>
+<span class="a merah-t" style="--in:tampil; --t:calc(var(--b2) + 2s)"> "signature": "perintah tulis</span>
+<span class="a merah-t" style="--in:tampil; --t:calc(var(--b2) + 2s)">   Modbus ke genset"}</span></pre>
+    </div>
+    <div class="abs pjs kartu a" style="--t:calc(var(--b2) + 2.9s)">
+      <div class="lbl">Kotak Pos Jaga membaca catatan ini</div>
+      <div class="cips"><span class="pil kuning">MEMUTUSKAN</span><span class="pil merah">MEMBLOKIR</span><span class="pil hijau">MENJELASKAN</span></div>
+    </div>
+    <div class="abs batas">
+      <span class="cip merah a" style="--t:calc(var(--b3) + .5s)">Hanya mengenali yang sudah ada aturannya</span>
+      <span class="cip biru a" style="--t:calc(var(--b3) + 3.2s)">+ AI deteksi perilaku untuk yang belum dikenal</span>
     </div>
   </section>
 

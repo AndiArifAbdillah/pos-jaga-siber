@@ -1,6 +1,6 @@
 # Pembuat video Pos Jaga Siber
 
-Folder ini berisi semua yang dibutuhkan untuk membuat ulang video presentasi (sekitar 4 menit 48 detik, 1920 × 1080). Video **tidak dibuat dengan AI pembuat video**. Gambarnya berasal dari:
+Folder ini berisi semua yang dibutuhkan untuk membuat ulang video presentasi (sekitar 5 menit 27 detik, 1920 × 1080). Video **tidak dibuat dengan AI pembuat video**. Gambarnya berasal dari:
 
 - **dashboard asli** yang direkam saat berjalan dengan model AI lokal,
 - **animasi penjelasan** yang digambar di `adegan.html`,
@@ -10,7 +10,7 @@ Folder ini berisi semua yang dibutuhkan untuk membuat ulang video presentasi (se
 
 | Berkas | Isi |
 |---|---|
-| `naskah.json` | Naskah: 11 adegan, setiap adegan berisi beberapa ketukan (kalimat) |
+| `naskah.json` | Naskah: 12 adegan, setiap adegan berisi beberapa ketukan (kalimat) |
 | `rekam_dashboard.py` | Menjalankan kotak dalam mode demo, memutar skenario, dan memotret dashboard asli |
 | `adegan.html` | Panggung animasi. Setiap adegan bisa diputar ke detik mana pun |
 | `buat_video.py` | Membuat suara, menghitung waktu, merender frame, dan menggabungkan semuanya |

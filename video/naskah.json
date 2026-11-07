@@ -35,6 +35,16 @@
       ]
     },
     {
+      "id": "suricata",
+      "bab": "2 · Cara kerja: Suricata",
+      "ketukan": [
+        {"teks": "Lalu apa itu Suricata? Suricata adalah program pendeteksi serangan jaringan yang gratis dan terbuka, dikembangkan yayasan OISF dan dipakai luas di banyak negara.", "ucap": "Lalu, apa itu Suricata? Suricata adalah program pendeteksi serangan jaringan yang gratis dan terbuka, dikembangkan yayasan O I S F, dan dipakai luas di banyak negara.", "jeda": 0.3},
+        {"teks": "Cara kerjanya seperti petugas pemeriksa di pos gerbang: setiap paket data yang lewat dibuka, lalu dicocokkan dengan buku aturan berisi ciri-ciri serangan.", "jeda": 0.3},
+        {"teks": "Kalau ada yang cocok, Suricata menulis catatan. Catatan itulah yang dibaca kotak kami untuk memutuskan, memblokir, dan menjelaskan ke petugas.", "jeda": 0.3},
+        {"teks": "Tapi Suricata hanya mengenali serangan yang sudah ada aturannya. Karena itu kami menambahkan AI untuk menangkap yang belum dikenal.", "jeda": 0.8}
+      ]
+    },
+    {
       "id": "lab-genset",
       "bab": "3 · Ancamannya nyata",
       "ketukan": [
