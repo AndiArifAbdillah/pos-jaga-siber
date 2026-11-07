@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pos Jaga Siber — Slide Presentasi</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0f1c;
+  --card: #111827;
+  --border: #1e3a5f;
+  --accent: #06b6d4;
+  --accent2: #22d3ee;
+  --green: #10b981;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --white: #ffffff;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+.slide-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.slide {
+  display: none;
+  width: 100%;
+  height: 100%;
+  padding: 60px 80px;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  background: var(--bg);
+}
+
+.slide.active { display: flex; }
+
+/* Slide backgrounds */
+.slide::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(6,182,212,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(6,182,212,0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.slide > * { position: relative; z-index: 1; }
+
+/* Title slide */
+.title-slide { text-align: center; align-items: center; }
+.title-slide h1 {
+  font-size: 4.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--accent2), var(--accent), #0ea5e9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -2px;
+  margin-bottom: 16px;
+}
+.title-slide .subtitle {
+  font-size: 1.6rem;
+  color: var(--muted);
+  font-weight: 300;
+  margin-bottom: 40px;
+}
+.title-slide .badge {
+  display: inline-block;
+  background: rgba(6,182,212,0.15);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  padding: 10px 28px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 50px;
+}
+.title-slide .team {
+  color: var(--muted);
+  font-size: 1rem;
+}
+.title-slide .team strong { color: var(--text); }
+
+/* Section headers */
+h2 {
+  font-size: 2.6rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: var(--white);
+}
+h2 .num {
+  color: var(--accent);
+  font-weight: 300;
+  margin-right: 12px;
+}
+h3 {
+  font-size: 1.4rem;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+p, li {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+
+.lead {
+  font-size: 1.5rem;
+  color: var(--muted);
+  margin-bottom: 40px;
+  font-weight: 300;
+}
+
+/* Cards grid */
+.cards { display: grid; gap: 24px; margin-top: 30px; }
+.cards-2 { grid-template-columns: 1fr 1fr; }
+.cards-3 { grid-template-columns: 1fr 1fr 1fr; }
+.cards-4 { grid-template-columns: 1fr 1fr; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 30px;
+}
+.card .icon {
+  font-size: 2.2rem;
+  margin-bottom: 14px;
+}
+.card h4 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--white);
+}
+.card p {
+  font-size: 1.05rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Highlight box */
+.highlight {
+  background: rgba(6,182,212,0.1);
+  border-left: 4px solid var(--accent);
+  padding: 20px 28px;
+  border-radius: 0 12px 12px 0;
+  margin: 20px 0;
+}
+.highlight p { color: var(--accent2); font-weight: 500; }
+
+/* Architecture diagram */
+.arch-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--accent2);
+  white-space: pre;
+  overflow-x: auto;
+  margin-top: 24px;
+}
+
+/* Screenshot */
+.screenshot-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+.screenshot-container img {
+  max-width: 85%;
+  max-height: 65vh;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+}
+th {
+  text-align: left;
+  padding: 14px 20px;
+  background: rgba(6,182,212,0.1);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 1rem;
+  border-bottom: 2px solid var(--border);
+}
+td {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(30,58,95,0.5);
+  font-size: 1.05rem;
+  color: var(--text);
+}
+tr:hover td { background: rgba(6,182,212,0.03); }
+
+/* Tag / pill */
+.tag {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.tag-red { background: rgba(239,68,68,0.15); color: var(--red); }
+.tag-green { background: rgba(16,185,129,0.15); color: var(--green); }
+.tag-cyan { background: rgba(6,182,212,0.15); color: var(--accent); }
+.tag-orange { background: rgba(245,158,11,0.15); color: var(--orange); }
+
+/* Bullet list */
+ul { list-style: none; padding: 0; margin-top: 20px; }
+ul li {
+  padding: 10px 0;
+  padding-left: 30px;
+  position: relative;
+}
+ul li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: bold;
+}
+
+/* Navigation */
+.nav {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(17,24,39,0.9);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  padding: 10px 24px;
+  border-radius: 50px;
+  z-index: 100;
+}
+.nav button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.nav button:hover {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.nav .counter {
+  color: var(--muted);
+  font-size: 0.95rem;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Slide number */
+.slide-num {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  opacity: 0.5;
+}
+
+/* Two column */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  margin-top: 24px;
+}
+
+/* Score meter */
+.meter {
+  height: 10px;
+  background: var(--card);
+  border-radius: 5px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s;
+}
+
+/* Print / PDF */
+@media print {
+  .nav { display: none; }
+  .slide { display: flex !important; page-break-after: always; height: 100vh; }
+  body { overflow: visible; }
+}
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: JUDUL -->
+<div class="slide-container">
+
+<div class="slide title-slide active" id="s1">
+  <div class="slide-num">1 / 15</div>
+  <div class="badge">Kartika Cyber Hackathon 2026 · Kategori Penangkalan</div>
+  <h1>POS JAGA SIBER</h1>
+  <p class="subtitle">Penjaga Jaringan Markas yang Mandiri</p>
+  <p class="team">
+    <strong>Andi Arif Abdillah</strong> · <strong>Fairuz Akhdan</strong> · <strong>Aditya Maulana Pamungkas</strong>
+  </p>
+</div>
+
+<!-- SLIDE 2: MASALAH -->
+<div class="slide" id="s2">
+  <div class="slide-num">2 / 15</div>
+  <h3>Latar Belakang</h3>
+  <h2>Masalah di Markas</h2>
+  <p class="lead">Peralatan penting tersambung jaringan, tetapi tidak bisa dilindungi cara biasa</p>
+  <div class="cards cards-3">
+    <div class="card">
+      <div class="icon">⚡</div>
+      <h4>Genset & Panel Listrik</h4>
+      <p>Dikendalikan lewat Modbus. Tidak bisa dipasangi antivirus. Satu perintah asing = listrik padam.</p>
+    </div>
+    <div class="card">
+      <div class="icon">📹</div>
+      <h4>Kamera Pengawas</h4>
+      <p>Sering diam-diam mengirim rekaman ke server pabrik di luar negeri tanpa sepengetahuan pengguna.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🔐</div>
+      <h4>Kunci Pintu Elektronik</h4>
+      <p>Kalau dikuasai penyerang, bisa dipakai memindai seluruh jaringan markas dari dalam.</p>
+    </div>
+  </div>
+  <div class="highlight" style="margin-top:30px">
+    <p>⚠️ Petugas jaga bukan ahli keamanan siber — mereka butuh alat yang menjelaskan, bukan alat yang membutuhkan keahlian.</p>
+  </div>
+</div>
+
+<!-- SLIDE 3: SOLUSI -->
+<div class="slide" id="s3">
+  <div class="slide-num">3 / 15</div>
+  <h3>Solusi</h3>
+  <h2>Pos Jaga Siber</h2>
+  <div class="highlight" style="margin-top:20px; margin-bottom:30px;">
+    <p style="font-size:1.4rem;">Penjaga jaringan markas yang <strong>bekerja mandiri</strong>, menjelaskan ancaman dalam <strong>bahasa sehari-hari</strong>, dan langsung <strong>mengamankan peralatan penting</strong> seperti genset dan kamera.</p>
+  </div>
+  <div class="cards cards-4">
+    <div class="card">
+      <div class="icon">👁️</div>
+      <h4>Mengawasi</h4>
+      <p>Semua lalu lintas jaringan kantor dan peralatan dipantau 24/7</p>
+    </div>
+    <div class="card">
+      <div class="icon">🛡️</div>
+      <h4>Mengamankan</h4>
+      <p>Kejadian kritis pada peralatan diisolasi otomatis lewat router MikroTik</p>
+    </div>
+    <div class="card">
+      <div class="icon">💬</div>
+      <h4>Menjelaskan</h4>
+      <p>AI lokal menjelaskan setiap kejadian dalam bahasa sederhana + langkah SOP</p>
+    </div>
+    <div class="card">
+      <div class="icon">📋</div>
+      <h4>Mencatat</h4>
+      <p>Catatan bukti anti-ubah dengan rantai hash dan tanda tangan digital</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: CARA KERJA -->
+<div class="slide" id="s4">
+  <div class="slide-num">4 / 15</div>
+  <h3>Arsitektur</h3>
+  <h2>Cara Kerja</h2>
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-top:20px; position:relative; overflow:hidden;">
+    <svg viewBox="0 0 1000 360" style="width:100%; height:auto; display:block;">
+      <defs>
+        <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#06b6d4"/>
+          <stop offset="100%" stop-color="#22d3ee"/>
+        </linearGradient>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+
+      <style>
+        .flow-line { stroke: #1e3a5f; stroke-width: 3; fill: none; }
+        .flow-anim { stroke: #22d3ee; stroke-width: 3; fill: none; stroke-dasharray: 10 15; animation: dash 2s linear infinite; filter: drop-shadow(0 0 3px #06b6d4); }
+        .flow-red { stroke: #ef4444; stroke-width: 3; fill: none; stroke-dasharray: 8 12; animation: dash 1.5s linear infinite; }
+        .flow-green { stroke: #10b981; stroke-width: 3; fill: none; stroke-dasharray: 8 12; animation: dash 1.8s linear infinite; }
+        @keyframes dash { to { stroke-dashoffset: -50; } }
+        @keyframes pulseNode { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.02); opacity: 1; filter: drop-shadow(0 0 8px #06b6d4); } }
+        .pulse-box { animation: pulseNode 3s ease-in-out infinite; transform-origin: center; }
+      </style>
+
+      <!-- Connection Lines -->
+      <path d="M 120 70 L 250 70" class="flow-line" />
+      <path d="M 120 70 L 250 70" class="flow-anim" />
+
+      <path d="M 390 70 L 490 70" class="flow-line" />
+      <path d="M 390 70 L 490 70" class="flow-anim" />
+
+      <!-- Branching lines from PJS to Outputs -->
+      <path d="M 640 90 L 640 180 L 320 180 L 320 220" class="flow-line" />
+      <path d="M 640 90 L 640 180 L 320 180 L 320 220" class="flow-red" />
+
+      <path d="M 640 90 L 640 220" class="flow-line" />
+      <path d="M 640 90 L 640 220" class="flow-green" />
+
+      <path d="M 640 90 L 640 180 L 820 180 L 820 220" class="flow-line" />
+      <path d="M 640 90 L 640 180 L 820 180 L 820 220" class="flow-anim" />
+
+      <!-- Merge to Dashboard -->
+      <path d="M 320 280 L 320 310 L 500 310" class="flow-line" />
+      <path d="M 640 280 L 640 310" class="flow-line" />
+      <path d="M 820 280 L 820 310 L 640 310" class="flow-line" />
+
+      <!-- Node 1: Jaringan Markas -->
+      <rect x="20" y="35" width="100" height="70" rx="8" fill="#0d1424" stroke="#1e3a5f" stroke-width="2"/>
+      <text x="70" y="65" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle">Jaringan Markas</text>
+      <text x="70" y="85" fill="#94a3b8" font-size="10" text-anchor="middle">Genset, CCTV, Tamu</text>
+
+      <!-- Node 2: Suricata (Mata) -->
+      <rect x="250" y="35" width="140" height="70" rx="8" fill="#0d1424" stroke="#06b6d4" stroke-width="2"/>
+      <text x="320" y="65" fill="#22d3ee" font-size="13" font-weight="bold" text-anchor="middle">Suricata (Mata)</text>
+      <text x="320" y="85" fill="#94a3b8" font-size="10" text-anchor="middle">Inspeksi eve.json</text>
+
+      <!-- Node 3: PJS Core (Otak) -->
+      <rect x="490" y="25" width="220" height="90" rx="10" fill="#132338" stroke="#06b6d4" stroke-width="3" class="pulse-box"/>
+      <text x="600" y="58" fill="#22d3ee" font-size="15" font-weight="bold" text-anchor="middle">Pos Jaga Siber Core</text>
+      <text x="600" y="78" fill="#f8fafc" font-size="11" text-anchor="middle">Detektor Aturan + AI Perilaku (ML)</text>
+      <text x="600" y="96" fill="#10b981" font-size="10" text-anchor="middle">● Menemukan &amp; Mengevaluasi</text>
+
+      <!-- Node 4: MikroTik (Tindakan) -->
+      <rect x="240" y="220" width="160" height="60" rx="8" fill="#231317" stroke="#ef4444" stroke-width="2"/>
+      <text x="320" y="245" fill="#ef4444" font-size="12" font-weight="bold" text-anchor="middle">MikroTik RouterOS</text>
+      <text x="320" y="265" fill="#fca5a5" font-size="10" text-anchor="middle">Isolasi Otomatis &lt;0.5s</text>
+
+      <!-- Node 5: AI Lokal (Penjelas) -->
+      <rect x="550" y="220" width="180" height="60" rx="8" fill="#0d241d" stroke="#10b981" stroke-width="2"/>
+      <text x="640" y="245" fill="#10b981" font-size="12" font-weight="bold" text-anchor="middle">AI Lokal (Ollama)</text>
+      <text x="640" y="265" fill="#a7f3d0" font-size="10" text-anchor="middle">Penjelasan Bahasa Alami &amp; SOP</text>
+
+      <!-- Node 6: Catatan Bukti (Integritas) -->
+      <rect x="730" y="220" width="180" height="60" rx="8" fill="#0d1424" stroke="#06b6d4" stroke-width="2"/>
+      <text x="820" y="245" fill="#22d3ee" font-size="12" font-weight="bold" text-anchor="middle">Catatan Bukti Hukum</text>
+      <text x="820" y="265" fill="#94a3b8" font-size="10" text-anchor="middle">SHA-256 + Ed25519 Anti-Ubah</text>
+
+      <!-- Node 7: Dashboard (Wajah) -->
+      <rect x="420" y="300" width="240" height="48" rx="8" fill="#0d1424" stroke="#22d3ee" stroke-width="2"/>
+      <text x="540" y="330" fill="#f8fafc" font-size="13" font-weight="bold" text-anchor="middle">Dashboard Operator :8080</text>
+    </svg>
+  </div>
+  <div class="cards cards-3" style="margin-top:30px">
+    <div class="card" style="text-align:center">
+      <h4 style="color:var(--accent)">Suricata</h4>
+      <p>Mata — membaca paket jaringan</p>
+    </div>
+    <div class="card" style="text-align:center">
+      <h4 style="color:var(--accent)">pjs (Python)</h4>
+      <p>Otak — mengenali, memutuskan, bertindak</p>
+    </div>
+    <div class="card" style="text-align:center">
+      <h4 style="color:var(--accent)">Dashboard</h4>
+      <p>Wajah — petugas melihat dan memutuskan</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: TIGA AI -->
+<div class="slide" id="s5">
+  <div class="slide-num">5 / 15</div>
+  <h3>Inovasi Teknis Berbasis AI</h3>
+  <h2>Tiga Cara AI Dipakai</h2>
+  <div class="cards cards-3" style="margin-top:30px">
+    <div class="card" style="border-color: var(--accent);">
+      <div class="icon">🧠</div>
+      <h4>AI Deteksi Perilaku</h4>
+      <p>Machine learning (Isolation Forest) mempelajari kebiasaan normal, menandai perangkat yang berubah perilaku. <strong>Menangkap serangan tanpa aturan.</strong></p>
+      <div style="margin-top:12px"><span class="tag tag-cyan">Isolation Forest</span></div>
+    </div>
+    <div class="card">
+      <div class="icon">📝</div>
+      <h4>AI Penjelas</h4>
+      <p>Model bahasa lokal (Qwen 2.5 via Ollama) menjelaskan kejadian dalam bahasa sehari-hari. Petugas tidak perlu tahu istilah teknis.</p>
+      <div style="margin-top:12px"><span class="tag tag-green">LLM Lokal</span></div>
+    </div>
+    <div class="card">
+      <div class="icon">🤖</div>
+      <h4>Asisten Piket</h4>
+      <p>Petugas bertanya dengan bahasa biasa. Laporan ganti piket disusun otomatis. AI hanya menjawab dari data kotak (RAG).</p>
+      <div style="margin-top:12px"><span class="tag tag-green">RAG</span></div>
+    </div>
+  </div>
+  <div class="highlight" style="margin-top:30px">
+    <p>🔑 Prinsip utama: <strong>AI menemukan dan menjelaskan, sedangkan aturan tetap dan manusia yang memutuskan.</strong> Tidak ada AI yang bisa memblokir.</p>
+  </div>
+</div>
+
+<!-- SLIDE 6: AI DETEKSI PERILAKU DETAIL -->
+<div class="slide" id="s6">
+  <div class="slide-num">6 / 15</div>
+  <h3>AI #1 — Detail</h3>
+  <h2>AI Deteksi Perilaku</h2>
+  <div class="two-col">
+    <div>
+      <h4 style="color:var(--accent); margin-bottom:16px; font-size:1.15rem;">Cara Kerja Isolation Forest</h4>
+      <ul>
+        <li>Setiap perangkat diringkas menjadi <strong>7 ciri</strong> per rentang waktu: jumlah sambungan, tujuan, port, data keluar/masuk, sambungan luar, jam</li>
+        <li><strong>100 pohon acak</strong> membelah data — titik aneh terpisah lebih cepat</li>
+        <li>Skor 0–1: mendekati 1 = sangat aneh</li>
+        <li><strong>Penilaian dua sisi:</strong> pola gabungan + batas kebiasaan</li>
+        <li>Model dilatih <strong>per jaringan</strong> (kantor vs peralatan)</li>
+      </ul>
+      <h4 style="color:var(--accent); margin-top:24px; margin-bottom:16px; font-size:1.15rem;">Explainable AI</h4>
+      <p style="font-size:1.05rem; color:var(--muted);">Bukan hanya skor — AI menjelaskan <em>kenapa</em> aneh dengan membandingkan setiap ciri dengan kebiasaan normalnya.</p>
+    </div>
+    <div>
+      <h4 style="color:var(--accent); margin-bottom:16px; font-size:1.15rem;">Hasil Uji</h4>
+      <div class="card" style="margin-bottom:16px">
+        <p style="margin-bottom:8px"><strong>Kunci pintu memindai jaringan</strong></p>
+        <div style="display:flex; justify-content:space-between"><span>Skor</span><span style="color:var(--red); font-weight:700">1.00</span></div>
+        <div class="meter"><div class="meter-fill" style="width:100%; background: var(--red);"></div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <p style="margin-bottom:8px"><strong>Kamera mengirim ke luar</strong></p>
+        <div style="display:flex; justify-content:space-between"><span>Skor</span><span style="color:var(--orange); font-weight:700">0.97</span></div>
+        <div class="meter"><div class="meter-fill" style="width:97%; background: var(--orange);"></div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <p style="margin-bottom:8px"><strong>800 contoh normal</strong></p>
+        <div style="display:flex; justify-content:space-between"><span>False positive</span><span style="color:var(--green); font-weight:700">0</span></div>
+        <div class="meter"><div class="meter-fill" style="width:0%; background: var(--green);"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: FITUR UTAMA -->
+<div class="slide" id="s7">
+  <div class="slide-num">7 / 15</div>
+  <h3>Fitur</h3>
+  <h2>Fitur Utama</h2>
+  <div class="cards cards-4" style="margin-top:20px">
+    <div class="card">
+      <h4>🔍 Pengenalan Perangkat</h4>
+      <p>Mengenali perangkat biasa, menandai perangkat baru yang masuk jaringan</p>
+    </div>
+    <div class="card">
+      <h4>⚡ Isolasi Otomatis</h4>
+      <p>Kejadian kritis pada peralatan OT diisolasi lewat MikroTik dalam hitungan detik</p>
+    </div>
+    <div class="card">
+      <h4>📊 Deteksi Berbasis Aturan</h4>
+      <p>Perintah asing ke genset, data ke luar markas, sinyal berkala (beaconing)</p>
+    </div>
+    <div class="card">
+      <h4>🧠 Deteksi Perilaku AI</h4>
+      <p>Serangan yang belum punya aturan tertangkap machine learning</p>
+    </div>
+    <div class="card">
+      <h4>💬 Penjelasan Bahasa Sederhana</h4>
+      <p>AI lokal menjelaskan apa & kenapa, plus langkah SOP yang bisa dicentang</p>
+    </div>
+    <div class="card">
+      <h4>🤖 Asisten Piket</h4>
+      <p>Tanya jawab dan laporan ganti piket otomatis dengan RAG</p>
+    </div>
+    <div class="card">
+      <h4>📒 Catatan Bukti Anti-Ubah</h4>
+      <p>Rantai hash + tanda tangan Ed25519 + kode buku jaga kertas</p>
+    </div>
+    <div class="card">
+      <h4>🔌 Mandiri (Offline)</h4>
+      <p>Tetap menjaga saat internet putus. Data markas tidak pernah keluar</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: SCREENSHOT DASHBOARD -->
+<div class="slide" id="s8">
+  <div class="slide-num">8 / 15</div>
+  <h3>Tampilan</h3>
+  <h2>Dashboard — Serangan ke Genset</h2>
+  <p style="color:var(--muted); margin-top:8px;">Kejadian kritis diisolasi otomatis, dijelaskan AI, dengan langkah SOP</p>
+  <div class="screenshot-container">
+    <img src="gambar/01-dashboard-genset.jpg" alt="Dashboard genset">
+  </div>
+</div>
+
+<!-- SLIDE 9: SCREENSHOT AI PERILAKU -->
+<div class="slide" id="s9">
+  <div class="slide-num">9 / 15</div>
+  <h3>Tampilan</h3>
+  <h2>AI Deteksi Perilaku — Serangan Tanpa Aturan</h2>
+  <p style="color:var(--muted); margin-top:8px;">Skor keanehan 1.00 dengan penjelasan kenapa — ditangkap tanpa aturan khusus</p>
+  <div class="screenshot-container">
+    <img src="gambar/02-ai-perilaku.jpg" alt="AI perilaku">
+  </div>
+</div>
+
+<!-- SLIDE 10: SCREENSHOT ASISTEN -->
+<div class="slide" id="s10">
+  <div class="slide-num">10 / 15</div>
+  <h3>Tampilan</h3>
+  <h2>Asisten Piket & Laporan</h2>
+  <p style="color:var(--muted); margin-top:8px;">Tanya jawab dari data kotak + laporan ganti piket otomatis</p>
+  <div class="screenshot-container">
+    <img src="gambar/03-asisten-piket.jpg" alt="Asisten piket">
+  </div>
+</div>
+
+<!-- SLIDE 11: PAGAR PENGAMAN -->
+<div class="slide" id="s11">
+  <div class="slide-num">11 / 15</div>
+  <h3>Keamanan</h3>
+  <h2>Pagar Pengaman AI</h2>
+  <p class="lead">AI tidak dipercaya untuk memutuskan — hanya untuk menemukan dan menjelaskan</p>
+  <div class="cards cards-2">
+    <div class="card">
+      <h4 style="color:var(--red)">❌ AI TIDAK boleh</h4>
+      <ul>
+        <li>Memblokir perangkat sendiri</li>
+        <li>Menulis langkah SOP</li>
+        <li>Menjawab di luar data kotak</li>
+        <li>Mengarang nomor kejadian</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color:var(--green)">✅ Pagar yang dipasang</h4>
+      <ul>
+        <li>Blokir otomatis hanya untuk kejadian kritis OT</li>
+        <li>Router & pengendali resmi tidak pernah diblokir</li>
+        <li>Blokir punya batas waktu 24 jam</li>
+        <li>Nomor kejadian AI dicek, yang tidak ada dibuang</li>
+        <li>Kalau AI mati, penjelasan bawaan tetap tampil</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 12: CATATAN BUKTI -->
+<div class="slide" id="s12">
+  <div class="slide-num">12 / 15</div>
+  <h3>Integritas</h3>
+  <h2>Catatan Bukti Anti-Ubah</h2>
+  <div class="two-col">
+    <div>
+      <ul>
+        <li><strong>Rantai hash:</strong> setiap entri memuat sidik jari entri sebelumnya. Satu entri diubah/dihapus → rantai putus.</li>
+        <li><strong>Tanda tangan Ed25519:</strong> setiap entri ditandatangani digital, tidak bisa dipalsukan.</li>
+        <li><strong>Kode buku jaga:</strong> dicetak di dashboard, ditulis tangan di buku jaga kertas. Tidak bisa dihapus dari jauh.</li>
+        <li><strong>Semua tercatat:</strong> kejadian, tindakan, centangan SOP, pertanyaan, dan laporan piket.</li>
+      </ul>
+    </div>
+    <div class="screenshot-container" style="margin-top:0">
+      <img src="gambar/04-catatan-bukti-putus.jpg" alt="Catatan bukti" style="max-width:100%; max-height:50vh;">
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 13: TEKNOLOGI -->
+<div class="slide" id="s13">
+  <div class="slide-num">13 / 15</div>
+  <h3>Stack</h3>
+  <h2>Teknologi yang Dipakai</h2>
+  <table>
+    <thead>
+      <tr><th>Komponen</th><th>Pembuat</th><th>Dipakai Untuk</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Python (tanpa pustaka tambahan)</td><td>PSF</td><td>Seluruh program kotak</td></tr>
+      <tr><td>Suricata</td><td>OISF</td><td>Membaca lalu lintas jaringan</td></tr>
+      <tr><td>MikroTik RouterOS / CHR</td><td>MikroTik</td><td>Router & isolasi perangkat</td></tr>
+      <tr><td>Ollama + Qwen 2.5</td><td>Ollama / Alibaba Cloud</td><td>AI penjelas & asisten lokal</td></tr>
+      <tr><td>Isolation Forest</td><td>Liu, Ting, Zhou (2008)</td><td>AI deteksi perilaku (Python murni)</td></tr>
+      <tr><td>Ed25519 (RFC 8032)</td><td>IETF</td><td>Tanda tangan catatan bukti</td></tr>
+      <tr><td>VirtualBox</td><td>Oracle</td><td>Lab virtual</td></tr>
+    </tbody>
+  </table>
+  <div class="highlight" style="margin-top:20px">
+    <p>💡 Kode dan dokumentasi dikembangkan dengan bantuan asisten AI (Claude, buatan Anthropic)</p>
+  </div>
+</div>
+
+<!-- SLIDE 14: KELAYAKAN -->
+<div class="slide" id="s14">
+  <div class="slide-num">14 / 15</div>
+  <h3>Implementasi</h3>
+  <h2>Kelayakan & Rencana</h2>
+  <div class="two-col">
+    <div>
+      <h4 style="color:var(--accent); margin-bottom:16px; font-size:1.15rem;">💰 Biaya per Kotak</h4>
+      <div class="card">
+        <ul>
+          <li>Mini PC dengan 2 kartu jaringan</li>
+          <li>Switch yang bisa port mirror</li>
+          <li>Semua perangkat lunak <strong>gratis</strong></li>
+        </ul>
+      </div>
+      <h4 style="color:var(--accent); margin-top:24px; margin-bottom:16px; font-size:1.15rem;">📈 Pemasangan Bertahap</h4>
+      <div class="card">
+        <ul>
+          <li>Mulai dari satu markas</li>
+          <li>Masa belajar 14 hari</li>
+          <li>Perluas ke markas lain</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h4 style="color:var(--accent); margin-bottom:16px; font-size:1.15rem;">🔮 Rencana Lanjutan</h4>
+      <div class="card">
+        <ul>
+          <li>Dashboard pusat (gabungan banyak kotak)</li>
+          <li>Pelatihan ulang model otomatis</li>
+          <li>Dukungan lebih banyak jenis peralatan (DNP3, ENIP)</li>
+          <li>Chip TPM untuk kunci tanda tangan</li>
+          <li>Login dan akses bertingkat di dashboard</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 15: BATAS & PENUTUP -->
+<div class="slide" id="s15">
+  <div class="slide-num">15 / 15</div>
+  <h3>Penutup</h3>
+  <h2>Batas Purwarupa & Penutup</h2>
+  <div class="two-col" style="margin-top:20px">
+    <div>
+      <h4 style="color:var(--orange); margin-bottom:16px; font-size:1.15rem;">⚠️ Keterbatasan (Kami Akui)</h4>
+      <ul>
+        <li>Dashboard belum memakai login</li>
+        <li>Kunci tanda tangan masih di berkas (bukan TPM)</li>
+        <li>Baru diuji di lab virtual, belum di markas sungguhan</li>
+        <li>Model AI perilaku belum melatih ulang otomatis</li>
+        <li>Data demo adalah data buatan</li>
+      </ul>
+    </div>
+    <div style="display:flex; flex-direction:column; justify-content:center;">
+      <div class="highlight" style="margin-bottom:30px;">
+        <p style="font-size:1.5rem;">Pos Jaga Siber: penjaga jaringan markas yang <strong>bekerja mandiri</strong>, menjelaskan ancaman dalam <strong>bahasa sehari-hari</strong>, dan langsung <strong>mengamankan peralatan penting</strong>.</p>
+      </div>
+      <p style="color:var(--muted); text-align:center;">
+        Coba sendiri: <code style="background:var(--card); padding:4px 12px; border-radius:6px; color:var(--accent);">python -m pjs demo --putar --baru</code>
+      </p>
+      <p style="color:var(--muted); text-align:center; margin-top:8px; font-size:0.95rem;">
+        github.com/AndiArifAbdillah/pos-jaga-siber
+      </p>
+    </div>
+  </div>
+</div>
+
+</div><!-- end slide-container -->
+
+<!-- NAVIGATION -->
+<div class="nav">
+  <button onclick="prev()" title="Sebelumnya">◀</button>
+  <span class="counter" id="counter">1 / 15</span>
+  <button onclick="next()" title="Berikutnya">▶</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let current = 0;
+
+function show(n) {
+  slides[current].classList.remove('active');
+  current = (n + slides.length) % slides.length;
+  slides[current].classList.add('active');
+  document.getElementById('counter').textContent = (current + 1) + ' / ' + slides.length;
+}
+
+function next() { show(current + 1); }
+function prev() { show(current - 1); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); prev(); }
+  if (e.key === 'Home') { e.preventDefault(); show(0); }
+  if (e.key === 'End') { e.preventDefault(); show(slides.length - 1); }
+});
+</script>
+
+</body>
+</html>
+
