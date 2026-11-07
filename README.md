@@ -82,6 +82,7 @@ Penjelasan lengkap dari nol ada di [docs/belajar](docs/belajar/00-mulai-di-sini.
 | `docs/belajar/` | Dokumen belajar dari dasar sampai paham seluruh proyek |
 | `docs/CARA-MENJALANKAN.md` | Cara menjalankan proyek di laptop biasa, langkah demi langkah |
 | `docs/CARA-DEMO.md` | Cara memperagakan demo (laptop dan lab), dengan gambar dan kalimat yang diucapkan |
+| `video/` | Pembuat video presentasi: naskah, perekam dashboard asli, panggung animasi, dan perender |
 | `docs/PANDUAN-LAB.md` | Langkah menyusun lab virtual di satu laptop |
 | `docs/PEMBAGIAN-KERJA.md` | Pembagian kerja tim 3 orang sampai 14 November |
 | `docs/PENGUMPULAN-KARYA.md` | Lima berkas wajib menurut rulebook dan daftar periksa sebelum mengumpulkan |

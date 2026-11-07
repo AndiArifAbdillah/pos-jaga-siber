@@ -5,6 +5,11 @@ data-demo/
 *.cadangan
 config.json
 
+# Bahan dan hasil pembuat video (besar, bisa dibuat ulang dengan video/buat_video.py)
+video/bahan/
+video/kerja/
+video/hasil/
+
 # Python
 __pycache__/
 *.pyc

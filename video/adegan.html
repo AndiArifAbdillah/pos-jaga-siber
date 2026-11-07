@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Adegan video Pos Jaga Siber</title>
+<!--
+  Panggung video. buat_video.py memanggil siapkan(data) untuk satu adegan,
+  lalu seek(t) untuk setiap frame dan memotret layar 1920x1080.
+  Semua animasi CSS dihentikan dan diputar manual ke detik t, sehingga
+  setiap frame tepat waktu dan mulus. Waktu ketukan narasi tersedia sebagai
+  variabel CSS --b0, --b1, ... (detik) dan --D (panjang adegan).
+-->
+<style>
+:root {
+  --bg: #0b0f0a; --panel: #151b12; --panel-2: #1b2317; --line: #2c3527; --line-2: #3d4936;
+  --fg: #eef1e8; --muted: #a3ac97; --accent: #bccc86; --accent-ink: #1a2010;
+  --crit: #ff8f84; --crit-bg: #3b1a17; --high: #f2be6a; --high-bg: #382a12; --mid: #9cc3f5; --mid-bg: #172638; --ok: #8fd18b;
+  --judul: "Bahnschrift", "Segoe UI", sans-serif;
+  --badan: "Segoe UI", sans-serif;
+  --mono: "Cascadia Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #000; }
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--fg); font-family: var(--badan); }
+.bg { position: absolute; inset: 0; background:
+  radial-gradient(1200px 700px at 30% 20%, rgba(188,204,134,.07), transparent 60%),
+  radial-gradient(900px 600px at 85% 90%, rgba(156,195,245,.05), transparent 60%); }
+.grid { position: absolute; inset: 0; opacity: .5; background-image:
+  linear-gradient(rgba(188,204,134,.045) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(188,204,134,.045) 1px, transparent 1px); background-size: 64px 64px; }
+.vinyet { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55)); z-index: 40; }
+
+/* --- HUD --- */
+.hud { position: absolute; left: 64px; right: 64px; top: 34px; display: flex; justify-content: space-between; align-items: center; z-index: 30; }
+.bab { font: 600 22px var(--judul); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); border: 1px solid rgba(188,204,134,.35); background: rgba(21,27,18,.7); padding: 8px 18px; border-radius: 999px; }
+.bab:empty { display: none; }
+.merek { display: flex; align-items: center; gap: 12px; font: 700 22px var(--judul); letter-spacing: .2em; color: var(--muted); }
+.merek svg { width: 34px; height: 34px; color: var(--accent); }
+.kemajuan { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(255,255,255,.06); z-index: 45; }
+.kemajuan span { display: block; height: 100%; width: 0; background: var(--accent); }
+
+/* --- teks terjemahan --- */
+.teks { position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%); max-width: 1580px; width: max-content; z-index: 35;
+  font: 600 36px/1.36 var(--badan); text-align: center; color: #f6f8f2; background: rgba(6,8,5,.78);
+  padding: 12px 30px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.06); }
+.teks:empty { display: none; }
+.tirai { position: absolute; inset: 0; background: #000; z-index: 50; opacity: 0; pointer-events: none; }
+
+/* --- utilitas animasi --- */
+.adegan { position: absolute; inset: 0; display: none; }
+.adegan.aktif { display: block; }
+.a { opacity: 0; animation: var(--in, muncul) .8s cubic-bezier(.2,.7,.2,1) var(--t, 0s) both, keluar .5s ease var(--u, 9999s) forwards; }
+.abs { position: absolute; }
+@keyframes muncul { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes skala { from { opacity: 0; transform: scale(.82); } to { opacity: 1; transform: none; } }
+@keyframes tampil { from { opacity: 0; } to { opacity: 1; } }
+@keyframes kiri { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: none; } }
+@keyframes keluar { to { opacity: 0; } }
+@keyframes garis { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+@keyframes alir { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+@keyframes denyut { 0%, 100% { box-shadow: 0 0 0 0 rgba(188,204,134,0); } 50% { box-shadow: 0 0 46px 6px rgba(188,204,134,.35); } }
+@keyframes denyut-merah { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,143,132,0); } 50% { box-shadow: 0 0 46px 8px rgba(255,143,132,.45); } }
+@keyframes ketik { from { width: 0; } to { width: calc(var(--n) * 1ch); } }
+@keyframes kedip { 50% { opacity: 0; } }
+@keyframes renggang { from { opacity: 0; letter-spacing: .7em; } to { opacity: 1; letter-spacing: .14em; } }
+@keyframes lebar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.garis { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: garis 1s ease var(--t, 0s) both, keluar .5s ease var(--u, 9999s) forwards; }
+.paket { position: absolute; left: 0; top: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px 4px rgba(188,204,134,.6);
+  offset-rotate: 0deg; opacity: 0; animation: alir var(--dur, 1.8s) linear var(--t, 0s) infinite, tampil .3s ease var(--t, 0s) forwards, keluar .4s ease var(--u, 9999s) forwards; }
+.paket.merah { background: var(--crit); box-shadow: 0 0 18px 5px rgba(255,143,132,.7); animation: alir var(--dur, 1.8s) linear var(--t, 0s) 1 both, tampil .2s ease var(--t, 0s) forwards, keluar .3s ease var(--u, 9999s) forwards; }
+
+/* --- komponen --- */
+.ikon { width: 64px; height: 64px; color: var(--fg); fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.ikon.besar { width: 150px; height: 150px; stroke-width: 2.4; }
+.kartu { background: rgba(21,27,18,.88); border: 1px solid var(--line-2); border-radius: 18px; }
+.unit { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.lbl { font: 600 26px var(--judul); letter-spacing: .04em; }
+.kecil { font: 400 22px var(--badan); color: var(--muted); }
+.pil { display: inline-block; font: 700 20px var(--judul); letter-spacing: .1em; padding: 7px 16px; border-radius: 8px; }
+.pil.hijau { color: #10140e; background: var(--ok); }
+.pil.merah { color: #2a0d0a; background: var(--crit); }
+.pil.kuning { color: #2a1d06; background: var(--high); }
+.pil.biru { color: #0d1a2a; background: var(--mid); }
+.cip { display: inline-flex; align-items: center; gap: 12px; font: 600 26px var(--badan); padding: 14px 24px; border-radius: 14px; border: 1px solid var(--line-2); background: rgba(21,27,18,.9); }
+.cip.merah { border-color: rgba(255,143,132,.55); color: var(--crit); background: rgba(59,26,23,.75); }
+.cip.hijau { border-color: rgba(143,209,139,.5); color: var(--ok); }
+.cip.biru { border-color: rgba(156,195,245,.5); color: var(--mid); }
+.judul-besar { font: 700 64px/1.1 var(--judul); letter-spacing: .01em; }
+.aksen { color: var(--accent); }
+.merah-t { color: var(--crit); }
+
+/* --- layar dashboard (gambar asli) --- */
+.layar { position: absolute; left: 160px; top: 104px; width: 1600px; height: 792px; border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--line-2); box-shadow: 0 30px 80px rgba(0,0,0,.6); background: #10140e; display: none; z-index: 10; }
+.layar.ada { display: block; }
+.layar-bar { height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: #1b2118; border-bottom: 1px solid var(--line); }
+.layar-bar i { width: 12px; height: 12px; border-radius: 50%; background: #3d4936; display: inline-block; }
+.layar-bar .url { margin-left: 14px; font: 15px var(--mono); color: var(--muted); background: #10140e; padding: 4px 14px; border-radius: 6px; }
+.layar-bar .jujur { margin-left: auto; font: 600 14px var(--badan); color: var(--high); letter-spacing: .02em; }
+.layar-isi { position: relative; width: 1600px; height: 756px; overflow: hidden; }
+#kanvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+#kanvas img { position: absolute; left: 0; top: 0; opacity: 0; image-rendering: auto; }
+.sorot { position: absolute; border-style: solid; border-color: var(--accent); box-shadow: 0 0 0 9999px rgba(0,0,0,.28); opacity: 0; }
+.sorot.merah { border-color: var(--crit); }
+.sorot.biru { border-color: var(--mid); }
+.sorot b { position: absolute; left: -3px; bottom: 100%; white-space: nowrap; font-family: var(--judul); font-weight: 700; letter-spacing: .04em;
+  background: var(--accent); color: var(--accent-ink); }
+.sorot.merah b { background: var(--crit); color: #2a0d0a; }
+.sorot.biru b { background: var(--mid); color: #0d1a2a; }
+#kursor { position: absolute; left: 0; top: 0; opacity: 0; transform-origin: 0 0; filter: drop-shadow(0 3px 6px rgba(0,0,0,.6)); }
+#riak { position: absolute; border: 3px solid var(--accent); border-radius: 50%; opacity: 0; }
+
+/* --- adegan: pembuka --- */
+#pembuka .jam { left: 160px; top: 120px; }
+#pembuka .jam b { display: block; font: 700 140px/1 var(--judul); color: rgba(238,241,232,.92); letter-spacing: .02em; }
+#pembuka .jam span { font: 600 28px var(--judul); color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+#pembuka .genset { left: 470px; top: 370px; width: 360px; }
+#pembuka .laptop { left: 1150px; top: 380px; width: 360px; }
+#pembuka .ikon.besar { width: 200px; height: 200px; }
+#pembuka .lbl { font-size: 32px; }
+#pembuka .status-hijau { left: 600px; top: 690px; }
+#pembuka .status-merah { left: 612px; top: 690px; --in: skala; }
+#pembuka .pil { font-size: 26px; padding: 9px 22px; }
+#pembuka .pln { left: 530px; top: 312px; }
+#pembuka .cips { left: 0; right: 0; top: 790px; display: flex; justify-content: center; gap: 28px; }
+#pembuka .genset .ikon { color: var(--ok); }
+#pembuka .judul { left: 0; right: 0; top: 300px; text-align: center; }
+#pembuka .judul svg { width: 170px; height: 170px; color: var(--accent); }
+#pembuka .judul h1 { margin: 26px 0 0; font: 700 120px/1 var(--judul); letter-spacing: .14em; animation: renggang 1.6s cubic-bezier(.2,.7,.2,1) calc(var(--b3) + .3s) both; }
+#pembuka .judul .garis-aksen { width: 520px; height: 4px; margin: 30px auto 0; background: var(--accent); transform-origin: center; animation: lebar 1s ease calc(var(--b3) + .9s) both; }
+#pembuka .judul p { margin: 26px 0 0; font: 600 34px var(--judul); color: var(--muted); letter-spacing: .08em; }
+
+/* --- adegan: masalah --- */
+#masalah .kol { top: 140px; width: 760px; height: 470px; padding: 34px 40px; }
+#masalah .kol h3 { margin: 0 0 6px; font: 700 40px var(--judul); }
+#masalah .kol .kecil { margin-bottom: 30px; }
+#masalah .ikon-baris { display: flex; gap: 44px; }
+#masalah .ikon-baris .unit .lbl { font-size: 24px; }
+#masalah .lencana { display: flex; flex-direction: column; gap: 12px; margin-top: 30px; }
+#masalah .lencana .cip { font-size: 23px; padding: 10px 18px; }
+#masalah .linimasa { left: 160px; right: 160px; top: 650px; display: flex; gap: 28px; }
+#masalah .linimasa .kartu { flex: 1; padding: 22px 28px; display: flex; gap: 22px; align-items: center; }
+#masalah .linimasa b { font: 700 52px var(--judul); color: var(--high); }
+#masalah .linimasa span { font: 500 25px/1.35 var(--badan); color: var(--fg); }
+#masalah .tanya { inset: 0; background: rgba(6,8,5,.86); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; z-index: 5; }
+#masalah .tanya h2 { margin: 0; font: 700 110px var(--judul); }
+#masalah .tanya p { margin: 22px 0 0; font: 600 34px var(--judul); color: var(--muted); letter-spacing: .06em; }
+
+/* --- adegan: solusi --- */
+#solusi .simpul { position: absolute; }
+#solusi .jaringan { left: 110px; top: 330px; width: 330px; padding: 26px; }
+#solusi .jaringan .ikon-baris { display: flex; justify-content: space-around; margin-top: 16px; }
+#solusi .jaringan .ikon { width: 56px; height: 56px; }
+#solusi .kotak { left: 660px; top: 230px; width: 620px; height: 480px; padding: 28px; border: 2px solid var(--accent); animation: tampil .8s ease var(--b0) both, denyut 3s ease-in-out calc(var(--b4) + .5s) infinite; }
+#solusi .kotak h3 { margin: 0 0 18px; display: flex; align-items: center; gap: 14px; font: 700 34px var(--judul); color: var(--accent); }
+#solusi .kotak h3 svg { width: 40px; height: 40px; }
+#solusi .modul-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+#solusi .modul { border: 1px solid var(--line-2); border-radius: 14px; padding: 18px; background: rgba(27,35,23,.8); min-height: 162px; }
+#solusi .modul b { display: block; font: 700 27px var(--judul); margin: 10px 0 4px; }
+#solusi .modul span { font: 500 21px var(--badan); color: var(--muted); }
+#solusi .modul .ikon { width: 46px; height: 46px; color: var(--accent); }
+#solusi .modul.nyala { animation: tampil .6s ease var(--t) both, nyala .8s ease var(--t2) forwards; }
+@keyframes nyala { to { border-color: var(--accent); background: rgba(188,204,134,.13); box-shadow: 0 0 30px rgba(188,204,134,.18); } }
+#solusi .dash { left: 1500px; top: 330px; width: 320px; padding: 24px; text-align: center; }
+#solusi .mikrotik { left: 330px; top: 790px; width: 330px; padding: 20px 24px; display: flex; gap: 18px; align-items: center; border-color: rgba(255,143,132,.6); }
+#solusi .mikrotik .ikon { color: var(--crit); }
+#solusi .awan { left: 470px; top: 96px; width: 260px; text-align: center; }
+#solusi .awan .ikon { width: 90px; height: 90px; }
+#solusi .silang { left: 700px; top: 104px; font: 700 80px var(--judul); color: var(--crit); --in: skala; }
+#solusi .menjaga { left: 1320px; top: 780px; display: flex; flex-direction: column; gap: 14px; }
+#solusi .gelembung { left: 1470px; top: 560px; width: 380px; padding: 18px 22px; font: 500 22px/1.4 var(--badan); border-color: rgba(188,204,134,.5); }
+#solusi .lbl-garis { font: 600 21px var(--judul); color: var(--muted); letter-spacing: .06em; }
+
+/* --- adegan: lab genset --- */
+#lab-genset .terminal { left: 110px; top: 190px; width: 860px; height: 560px; background: #0a0d09; border: 1px solid var(--line-2); border-radius: 14px; overflow: hidden; }
+#lab-genset .terminal .bar { height: 40px; background: #1b2118; display: flex; align-items: center; padding: 0 16px; gap: 8px; font: 600 17px var(--badan); color: var(--muted); }
+#lab-genset .terminal .bar i { width: 12px; height: 12px; border-radius: 50%; background: #3d4936; display: inline-block; }
+#lab-genset .terminal pre { margin: 0; padding: 26px; font: 21px/1.6 var(--mono); color: #d7ddcf; white-space: pre-wrap; }
+#lab-genset .ketik { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; width: 0; animation: ketik 2.4s steps(60) var(--t) both; }
+#lab-genset .prompt { color: var(--accent); }
+#lab-genset .keluaran { color: var(--crit); }
+#lab-genset .peramban { left: 1010px; top: 190px; width: 800px; height: 490px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line-2); background: #10140e; }
+#lab-genset .peramban .bar { height: 40px; background: #1b2118; display: flex; align-items: center; padding: 0 16px; font: 15px var(--mono); color: var(--muted); }
+#lab-genset .peramban img { position: absolute; left: 0; top: 40px; width: 800px; height: 450px; transform: scale(2.1); transform-origin: 50% 40%; }
+#lab-genset .peramban img.mati { opacity: 0; animation: tampil .5s ease var(--t) both; }
+#lab-genset .catatan { left: 1010px; top: 710px; width: 800px; font: 500 23px/1.45 var(--badan); color: var(--muted); }
+
+/* --- adegan: AI perilaku --- */
+#ai-perilaku .pintu { left: 130px; top: 150px; width: 820px; height: 720px; }
+#ai-perilaku .pintu svg { width: 820px; height: 720px; overflow: visible; }
+#ai-perilaku .hitung { left: 230px; top: 820px; }
+#ai-perilaku .if { left: 1000px; top: 160px; width: 800px; height: 700px; padding: 24px 28px; }
+#ai-perilaku .if h3 { margin: 0; font: 700 38px var(--judul); color: var(--accent); }
+#ai-perilaku .if .kecil { margin: 4px 0 10px; }
+#ai-perilaku .if svg { width: 744px; height: 540px; }
+
+/* --- adegan: bukti --- */
+#bukti .rantai { left: 0; right: 0; top: 330px; display: flex; justify-content: center; gap: 0; align-items: center; }
+#bukti .blok { width: 270px; padding: 22px; border: 2px solid var(--accent); border-radius: 16px; background: rgba(21,27,18,.92); }
+#bukti .blok b { font: 700 32px var(--judul); }
+#bukti .blok div { font: 18px/1.6 var(--mono); color: var(--muted); }
+#bukti .blok .stempel { margin-top: 8px; font: 700 17px var(--judul); color: var(--ok); letter-spacing: .08em; }
+#bukti .sambung { width: 70px; height: 6px; background: var(--accent); opacity: 0; animation: tampil .5s ease var(--t) both, putus .4s ease var(--t2, 9999s) forwards, keluar .5s ease var(--u, 9999s) forwards; }
+@keyframes putus { to { background: var(--crit); transform: scaleX(.4); } }
+#bukti .hapus { opacity: 0; animation: muncul .8s ease var(--t) both, buang 1s ease var(--t2) forwards, keluar .5s ease var(--u, 9999s) forwards; }
+svg .a, svg .garis { transform-box: fill-box; transform-origin: center; }
+@keyframes buang { to { opacity: .12; transform: translateY(160px) rotate(8deg); border-color: var(--crit); } }
+#bukti .hilang { left: 0; right: 0; top: 560px; text-align: center; }
+#bukti .buku { right: 120px; bottom: 180px; width: 470px; padding: 26px 30px; background: #efe8d2; color: #2b2a24; border-radius: 6px; transform: rotate(-3deg); z-index: 20;
+  box-shadow: 0 20px 50px rgba(0,0,0,.6); font: 30px/1.4 "Ink Free", "Segoe Print", cursive; }
+#bukti .buku .garis-buku { border-bottom: 1px solid #b9b09a; padding: 4px 0; }
+
+/* --- adegan: pagar --- */
+#pagar .dua { left: 160px; right: 160px; top: 170px; display: flex; gap: 40px; }
+#pagar .dua .kartu { flex: 1; padding: 34px 38px; min-height: 330px; }
+#pagar .dua h3 { margin: 18px 0 10px; font: 700 44px var(--judul); }
+#pagar .dua p { margin: 0; font: 500 27px/1.45 var(--badan); color: var(--muted); }
+#pagar .tegas { left: 0; right: 0; top: 560px; text-align: center; font: 700 46px var(--judul); color: var(--crit); }
+#pagar .tiga { left: 0; right: 0; top: 680px; display: flex; justify-content: center; gap: 24px; }
+
+/* --- adegan: penutup --- */
+#penutup .perangkat { left: 160px; right: 160px; top: 160px; display: flex; gap: 30px; }
+#penutup .perangkat .kartu { flex: 1; padding: 30px; text-align: center; }
+#penutup .perangkat b { display: block; margin-top: 14px; font: 700 34px var(--judul); }
+#penutup .perangkat span { font: 500 23px/1.4 var(--badan); color: var(--muted); }
+#penutup .angka { left: 160px; right: 160px; top: 520px; display: flex; gap: 30px; }
+#penutup .angka .kartu { flex: 1; padding: 26px 30px; }
+#penutup .angka b { display: block; font: 700 76px/1 var(--judul); color: var(--accent); }
+#penutup .angka span { font: 500 23px/1.35 var(--badan); color: var(--muted); }
+#penutup .akhir { inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; z-index: 5; }
+#penutup .akhir svg { width: 130px; height: 130px; color: var(--accent); }
+#penutup .akhir h1 { margin: 18px 0 0; font: 700 96px var(--judul); letter-spacing: .14em; }
+#penutup .akhir .slogan { margin: 18px 0 0; max-width: 1300px; font: 600 34px/1.4 var(--judul); color: var(--fg); }
+#penutup .akhir .tim { margin-top: 46px; font: 600 28px var(--badan); color: var(--muted); }
+#penutup .akhir .tim b { color: var(--fg); }
+#penutup .akhir .repo { margin-top: 16px; font: 24px var(--mono); color: var(--accent); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="i-genset" viewBox="0 0 64 64"><rect x="7" y="16" width="50" height="32" rx="5"/><path d="M14 48v6M50 48v6M7 26h-3M57 26h3"/><path d="M35 21l-9 13h7l-3 10 10-15h-7z" fill="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="i-kamera" viewBox="0 0 64 64"><path d="M8 24l34-9 5 17-34 9z"/><circle cx="40" cy="25" r="4"/><path d="M47 22l9-3v12l-7 2M22 38v10M12 48h20"/></symbol>
+    <symbol id="i-kunci" viewBox="0 0 64 64"><path d="M22 28v-8a10 10 0 0 1 20 0v8"/><rect x="14" y="28" width="36" height="27" rx="5"/><circle cx="32" cy="39" r="3.5"/><path d="M32 42.5V48"/></symbol>
+    <symbol id="i-laptop" viewBox="0 0 64 64"><rect x="13" y="13" width="38" height="26" rx="3"/><path d="M6 45h52l-4 7H10z"/></symbol>
+    <symbol id="i-server" viewBox="0 0 64 64"><rect x="16" y="8" width="32" height="48" rx="4"/><path d="M16 24h32M16 40h32"/><circle cx="24" cy="16" r="1.5" fill="currentColor"/><circle cx="24" cy="32" r="1.5" fill="currentColor"/><circle cx="24" cy="48" r="1.5" fill="currentColor"/></symbol>
+    <symbol id="i-router" viewBox="0 0 64 64"><rect x="8" y="32" width="48" height="16" rx="5"/><path d="M20 32l-5-17M44 32l5-17"/><circle cx="18" cy="40" r="1.6" fill="currentColor"/><circle cx="26" cy="40" r="1.6" fill="currentColor"/><circle cx="34" cy="40" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-perisai" viewBox="0 0 64 64"><path d="M32 5l23 8v17c0 14-10 24-23 29C19 54 9 44 9 30V13z"/><path d="M22 31l7 7 13-14"/></symbol>
+    <symbol id="i-awan" viewBox="0 0 64 64"><path d="M19 46h28a10 10 0 0 0 1-20 14 14 0 0 0-27-3 10 10 0 0 0-2 23z"/></symbol>
+    <symbol id="i-ai" viewBox="0 0 64 64"><rect x="16" y="16" width="32" height="32" rx="5"/><path d="M24 16V9M32 16V9M40 16V9M24 55v-7M32 55v-7M40 55v-7M16 24H9M16 32H9M16 40H9M55 24h-7M55 32h-7M55 40h-7"/><path d="M26 39l4-14h4l4 14M27.5 34h9" stroke-width="2.5"/></symbol>
+    <symbol id="i-mata" viewBox="0 0 64 64"><path d="M5 32c9-13 45-13 54 0-9 13-45 13-54 0z"/><circle cx="32" cy="32" r="8"/></symbol>
+    <symbol id="i-rantai" viewBox="0 0 64 64"><rect x="6" y="22" width="28" height="20" rx="10"/><rect x="30" y="22" width="28" height="20" rx="10"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 64 64"><rect x="6" y="10" width="52" height="34" rx="4"/><path d="M24 54h16M32 44v10"/></symbol>
+    <symbol id="i-orang" viewBox="0 0 64 64"><circle cx="32" cy="20" r="9"/><path d="M14 54c2-11 9-17 18-17s16 6 18 17"/></symbol>
+    <symbol id="i-pc" viewBox="0 0 64 64"><rect x="8" y="18" width="48" height="28" rx="5"/><rect x="16" y="38" width="9" height="5"/><rect x="29" y="38" width="9" height="5"/><circle cx="48" cy="28" r="2" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+
+<div id="stage">
+  <div class="bg"></div><div class="grid"></div>
+  <header class="hud"><div class="bab" id="bab"></div><div class="merek"><svg class="ikon"><use href="#i-perisai"/></svg>POS JAGA SIBER</div></header>
+
+  <!-- ============ PEMBUKA ============ -->
+  <section class="adegan" id="pembuka">
+    <div class="abs jam a" style="--t:.3s; --u:calc(var(--b3) - .3s)"><b>02.14</b><span>WIB · Markas satuan</span></div>
+    <div class="abs pln a" style="--t:calc(var(--b0) + 2.2s); --u:calc(var(--b3) - .3s)"><span class="pil merah">LISTRIK PLN PADAM</span></div>
+    <div class="abs unit genset a" style="--t:.9s; --u:calc(var(--b3) - .3s)"><svg class="ikon besar"><use href="#i-genset"/></svg><div class="lbl">Genset utama</div></div>
+    <div class="abs status-hijau a" style="--t:1.2s; --u:calc(var(--b1) + 2.7s)"><span class="pil hijau">SIAGA</span></div>
+    <div class="abs status-merah a" style="--t:calc(var(--b1) + 2.8s); --u:calc(var(--b3) - .3s)"><span class="pil merah">MATI</span></div>
+    <div class="abs unit laptop a" style="--t:var(--b1); --u:calc(var(--b3) - .3s)"><svg class="ikon besar" style="color:var(--crit)"><use href="#i-laptop"/></svg><div class="lbl merah-t">Laptop asing</div><div class="kecil">jaringan kantor</div></div>
+    <svg class="abs" width="1920" height="1080" style="left:0;top:0">
+      <path class="garis" pathLength="1000" d="M1220 480 C 1060 400, 920 560, 770 470" stroke="#ff8f84" stroke-width="4" stroke-dasharray="14 12" fill="none" style="--t:calc(var(--b1) + .6s); --u:calc(var(--b3) - .3s)"/>
+    </svg>
+    <div class="abs" style="left:0;top:0;width:1920px;height:1080px">
+      <div class="paket merah" style="offset-path:path('M1220 480 C 1060 400, 920 560, 770 470'); --t:calc(var(--b1) + 1.2s); --dur:1.4s; --u:calc(var(--b1) + 2.7s)"></div>
+    </div>
+    <div class="abs cips a" style="--t:calc(var(--b2) + .2s); --u:calc(var(--b3) - .3s)">
+      <span class="cip merah">Tanpa antivirus</span><span class="cip merah">Petugas jaga bukan ahli siber</span>
+    </div>
+    <div class="abs judul">
+      <svg class="ikon a" style="--in:skala; --t:var(--b3)"><use href="#i-perisai"/></svg>
+      <h1>POS JAGA SIBER</h1>
+      <div class="garis-aksen"></div>
+      <p class="a" style="--t:calc(var(--b3) + 1.3s)">Penjaga jaringan markas · bekerja mandiri · berbasis AI</p>
+    </div>
+  </section>
+
+  <!-- ============ MASALAH ============ -->
+  <section class="adegan" id="masalah">
+    <div class="abs kol kartu a" style="left:160px; --in:kiri; --t:.3s">
+      <h3>Jaringan kantor <span class="aksen">(IT)</span></h3>
+      <div class="kecil">Data dan dokumen</div>
+      <div class="ikon-baris">
+        <div class="unit"><svg class="ikon"><use href="#i-laptop"/></svg><div class="lbl">Laptop staf</div></div>
+        <div class="unit"><svg class="ikon"><use href="#i-server"/></svg><div class="lbl">Server</div></div>
+        <div class="unit"><svg class="ikon"><use href="#i-router"/></svg><div class="lbl">Router</div></div>
+      </div>
+      <div class="lencana"><span class="cip hijau a" style="--t:calc(var(--b1) + .2s)">Bisa dipasangi antivirus</span></div>
+    </div>
+    <div class="abs kol kartu a" style="left:1000px; --in:kiri; --t:1.2s; border-color:rgba(242,190,106,.55)">
+      <h3>Jaringan peralatan <span style="color:var(--high)">(OT)</span></h3>
+      <div class="kecil">Benda fisik yang harus tetap bekerja</div>
+      <div class="ikon-baris">
+        <div class="unit"><svg class="ikon" style="color:var(--high)"><use href="#i-genset"/></svg><div class="lbl">Genset</div></div>
+        <div class="unit"><svg class="ikon" style="color:var(--high)"><use href="#i-kamera"/></svg><div class="lbl">Kamera CCTV</div></div>
+        <div class="unit"><svg class="ikon" style="color:var(--high)"><use href="#i-kunci"/></svg><div class="lbl">Kunci pintu</div></div>
+      </div>
+      <div class="lencana">
+        <span class="cip merah a" style="--t:calc(var(--b1) + .3s)">Tidak bisa dipasangi antivirus</span>
+        <span class="cip merah a" style="--t:calc(var(--b1) + 1.6s)">Jarang diperbarui · Modbus tanpa kata sandi</span>
+      </div>
+    </div>
+    <div class="abs linimasa">
+      <div class="kartu a" style="--t:calc(var(--b2) + .4s)"><b>2015</b><span>Jaringan listrik Ukraina diserang. Ratusan ribu pelanggan padam berjam-jam.</span></div>
+      <div class="kartu a" style="--t:calc(var(--b2) + 2.4s)"><b>2016</b><span>Mirai: ratusan ribu kamera dan perekam CCTV diambil alih lewat kata sandi bawaan.</span></div>
+    </div>
+    <div class="abs tanya a" style="--in:tampil; --t:var(--b3)">
+      <h2 class="a" style="--t:calc(var(--b3) + .2s)">Siapa yang menjaga?</h2>
+      <p class="a" style="--t:calc(var(--b3) + 1.6s)">Petugas jaga bukan ahli siber · internet bisa putus kapan saja</p>
+    </div>
+  </section>
+
+  <!-- ============ SOLUSI ============ -->
+  <section class="adegan" id="solusi">
+    <svg class="abs" width="1920" height="1080" style="left:0;top:0">
+      <path class="garis" pathLength="1000" d="M440 470 L 660 470" stroke="#bccc86" stroke-width="4" stroke-dasharray="10 10" fill="none" style="--t:calc(var(--b0) + 1s)"/>
+      <path class="garis" pathLength="1000" d="M1280 470 L 1500 470" stroke="#bccc86" stroke-width="4" fill="none" style="--t:calc(var(--b3) + .3s)"/>
+      <path class="garis" pathLength="1000" d="M820 712 C 760 790, 720 830, 662 850" stroke="#ff8f84" stroke-width="4" stroke-dasharray="12 10" fill="none" style="--t:calc(var(--b2) + .3s)"/>
+      <path class="garis" pathLength="1000" d="M330 850 C 260 800, 250 640, 275 530" stroke="#ff8f84" stroke-width="4" fill="none" style="--t:calc(var(--b2) + 1.4s)"/>
+      <path class="garis" pathLength="1000" d="M275 330 C 300 250, 420 200, 520 170" stroke="#a3ac97" stroke-width="3" stroke-dasharray="8 10" fill="none" style="--t:calc(var(--b4) + .2s)"/>
+    </svg>
+    <div class="abs" style="left:0;top:0;width:1920px;height:1080px">
+      <div class="paket" style="offset-path:path('M440 470 L 660 470'); --t:calc(var(--b0) + 1.8s); --dur:1.3s"></div>
+      <div class="paket" style="offset-path:path('M440 470 L 660 470'); --t:calc(var(--b0) + 2.25s); --dur:1.3s"></div>
+      <div class="paket" style="offset-path:path('M440 470 L 660 470'); --t:calc(var(--b0) + 2.7s); --dur:1.3s"></div>
+      <div class="paket" style="offset-path:path('M1280 470 L 1500 470'); --t:calc(var(--b3) + 1.2s); --dur:1.2s"></div>
+      <div class="paket merah" style="offset-path:path('M820 712 C 760 790, 720 830, 662 850'); --t:calc(var(--b2) + 1s); --dur:1s"></div>
+    </div>
+    <div class="abs lbl-garis a" style="left:455px; top:420px; --t:calc(var(--b0) + 1.2s)">salinan</div>
+    <div class="simpul jaringan kartu a" style="--in:kiri; --t:.3s">
+      <div class="lbl">Jaringan markas</div>
+      <div class="ikon-baris"><svg class="ikon"><use href="#i-laptop"/></svg><svg class="ikon" style="color:var(--high)"><use href="#i-genset"/></svg><svg class="ikon" style="color:var(--high)"><use href="#i-kamera"/></svg></div>
+    </div>
+    <div class="simpul kotak kartu">
+      <h3><svg class="ikon"><use href="#i-perisai"/></svg>Kotak Pos Jaga</h3>
+      <div class="modul-grid">
+        <div class="modul nyala" style="--t:calc(var(--b0) + .6s); --t2:calc(var(--b1) + .3s)"><svg class="ikon"><use href="#i-mata"/></svg><b>Suricata</b><span>aturan · serangan yang dikenal</span></div>
+        <div class="modul nyala" style="--t:calc(var(--b0) + .9s); --t2:calc(var(--b1) + 2.6s)"><svg class="ikon"><use href="#i-ai"/></svg><b>AI perilaku</b><span>machine learning · yang belum dikenal</span></div>
+        <div class="modul nyala" style="--t:calc(var(--b0) + 1.2s); --t2:calc(var(--b3) + .3s)"><svg class="ikon"><use href="#i-ai"/></svg><b>AI lokal</b><span>penjelas · asisten piket</span></div>
+        <div class="modul nyala" style="--t:calc(var(--b0) + 1.5s); --t2:calc(var(--b3) + 2.4s)"><svg class="ikon"><use href="#i-rantai"/></svg><b>Catatan bukti</b><span>rantai hash · tanda tangan</span></div>
+      </div>
+    </div>
+    <div class="simpul dash kartu a" style="--t:calc(var(--b3) + .6s)"><svg class="ikon" style="width:80px;height:80px"><use href="#i-monitor"/></svg><div class="lbl" style="margin-top:8px">Dashboard petugas</div><div class="kecil">bahasa sehari-hari</div></div>
+    <div class="simpul gelembung kartu a" style="--t:calc(var(--b3) + 1.6s)">"Perangkat asing mengirim perintah ke genset. Perangkat itu sudah diisolasi."</div>
+    <div class="simpul mikrotik kartu a" style="--t:calc(var(--b2) + .5s)"><svg class="ikon"><use href="#i-router"/></svg><div><div class="lbl">MikroTik</div><div class="kecil">memutus pelaku</div></div></div>
+    <div class="simpul awan a" style="--t:calc(var(--b4) + .4s)"><svg class="ikon"><use href="#i-awan"/></svg><div class="lbl">Internet</div></div>
+    <div class="abs silang a" style="--t:calc(var(--b4) + 1.6s)">✕</div>
+    <div class="abs menjaga">
+      <span class="pil hijau a" style="--in:skala; --t:calc(var(--b4) + 2.4s)">TETAP MENJAGA</span>
+      <span class="cip hijau a" style="--t:calc(var(--b4) + 3.4s)">Data markas tidak keluar</span>
+    </div>
+  </section>
+
+  <!-- ============ LAB GENSET ============ -->
+  <section class="adegan" id="lab-genset">
+    <div class="abs terminal a" style="--in:kiri; --t:.2s">
+      <div class="bar"><i></i><i></i><i></i>&nbsp; Laptop penyerang (lab tim)</div>
+      <pre><span class="prompt">PS&gt; </span><span class="ketik" id="perintah" style="--t:1.1s"></span>
+
+<span class="keluaran a" id="keluaran" style="--in:tampil; --t:calc(var(--b1) + .5s)"></span></pre>
+    </div>
+    <div class="abs peramban a" style="--t:.6s">
+      <div class="bar">Genset tiruan · panel lampu</div>
+      <img src="bahan/lampu-nyala.png" alt="">
+      <img class="mati" src="bahan/lampu-mati.png" alt="" style="--t:calc(var(--b1) + 1.1s)">
+    </div>
+    <div class="abs catatan a" style="--t:calc(var(--b1) + 2s)">Modbus tidak memeriksa siapa pengirimnya. Siapa pun yang bisa menjangkau genset di jaringan bisa memberinya perintah.</div>
+  </section>
+
+  <!-- Adegan yang isinya hanya layar dashboard -->
+  <section class="adegan" id="demo-genset"></section>
+  <section class="adegan" id="demo-petugas"></section>
+  <section class="adegan" id="asisten"></section>
+
+  <!-- ============ AI PERILAKU ============ -->
+  <section class="adegan" id="ai-perilaku">
+    <div class="abs pintu a" style="--in:tampil; --t:.2s; --u:calc(var(--b3) - .4s)"><svg id="svg-pintu" viewBox="0 0 820 720"></svg></div>
+    <div class="abs hitung a" style="--t:calc(var(--b0) + 4.2s); --u:calc(var(--b3) - .4s)"><span class="cip merah">14 perangkat · 10 detik · tidak ada aturan yang cocok</span></div>
+    <div class="abs if kartu a" style="--t:calc(var(--b1) + .3s); --u:calc(var(--b3) - .4s)">
+      <h3>Isolation Forest</h3>
+      <div class="kecil">Yang aneh lebih cepat terpisah dari kerumunan</div>
+      <svg id="svg-if" viewBox="0 0 744 540"></svg>
+    </div>
+  </section>
+
+  <!-- ============ BUKTI ============ -->
+  <section class="adegan" id="bukti">
+    <div class="abs rantai" id="rantai"></div>
+    <div class="abs hilang a" style="--t:calc(var(--b1) + 1.6s); --u:calc(var(--b1) + 3.6s)"><span class="cip merah" style="font-size:32px" id="teks-hilang"></span></div>
+    <div class="abs buku a" style="--in:skala; --t:calc(var(--b2) + 2.2s)">
+      <div class="garis-buku">Buku jaga · ganti piket 06.00</div>
+      <div class="garis-buku">Serda Contoh → Serda Jaga</div>
+      <div class="garis-buku">Kode: <b id="kode-buku">----</b></div>
+    </div>
+  </section>
+
+  <!-- ============ PAGAR ============ -->
+  <section class="adegan" id="pagar">
+    <div class="abs dua">
+      <div class="kartu a" style="--in:kiri; --t:.3s"><svg class="ikon" style="color:var(--accent); width:72px; height:72px"><use href="#i-ai"/></svg><h3>AI menemukan &amp; menjelaskan</h3><p>Deteksi perilaku, penjelasan, asisten piket. Semua di dalam kotak.</p></div>
+      <div class="kartu a" style="--in:kiri; --t:1.4s"><svg class="ikon" style="color:var(--ok); width:72px; height:72px"><use href="#i-orang"/></svg><h3>Aturan &amp; manusia memutuskan</h3><p>Blokir hanya dari aturan tetap yang bisa diperiksa, atau tombol petugas.</p></div>
+    </div>
+    <div class="abs tegas a" style="--in:skala; --t:calc(var(--b0) + 5s)">Tidak ada AI yang bisa memblokir.</div>
+    <div class="abs tiga">
+      <span class="cip a" style="--t:calc(var(--b1) + .8s)">Hanya kritis + peralatan</span>
+      <span class="cip a" style="--t:calc(var(--b1) + 2.6s)">Berlaku 24 jam</span>
+      <span class="cip a" style="--t:calc(var(--b1) + 4.4s)">Router &amp; kotak tidak pernah diblokir</span>
+    </div>
+  </section>
+
+  <!-- ============ PENUTUP ============ -->
+  <section class="adegan" id="penutup">
+    <div class="abs perangkat">
+      <div class="kartu a" style="--t:.3s"><svg class="ikon" style="width:90px;height:90px;color:var(--accent)"><use href="#i-pc"/></svg><b>1 mini PC</b><span>dua colokan jaringan</span></div>
+      <div class="kartu a" style="--t:1.6s"><svg class="ikon" style="width:90px;height:90px"><use href="#i-router"/></svg><b>Router MikroTik</b><span>umumnya sudah ada di markas</span></div>
+      <div class="kartu a" style="--t:2.9s"><svg class="ikon" style="width:90px;height:90px;color:var(--ok)"><use href="#i-perisai"/></svg><b>Perangkat lunak</b><span>Python, Suricata, Ollama · bebas biaya lisensi</span></div>
+    </div>
+    <div class="abs angka">
+      <div class="kartu a" style="--t:calc(var(--b1) + .3s)"><b>41</b><span>tes otomatis lulus</span></div>
+      <div class="kartu a" style="--t:calc(var(--b1) + 1.1s)"><b>5</b><span>skenario serangan diperagakan</span></div>
+      <div class="kartu a" style="--t:calc(var(--b1) + 1.9s)"><b>3</b><span>peran AI, semuanya lokal</span></div>
+      <div class="kartu a" style="--t:calc(var(--b1) + 2.7s)"><b>0</b><span>alarm palsu dari 800 contoh normal (data demo)</span></div>
+    </div>
+    <div class="abs akhir a" style="--in:tampil; --t:var(--b2)">
+      <svg class="ikon a" style="--in:skala; --t:calc(var(--b2) + .3s)"><use href="#i-perisai"/></svg>
+      <h1 class="a" style="--t:calc(var(--b2) + .6s)">POS JAGA SIBER</h1>
+      <div class="slogan a" style="--t:calc(var(--b2) + 1.6s)">Penjaga jaringan markas yang bekerja mandiri, menjelaskan ancaman dalam bahasa sehari-hari, dan langsung mengamankan peralatan penting.</div>
+      <div class="tim a" style="--t:calc(var(--b2) + 4s)"><b>Andi Arif Abdillah · Fairuz Akhdan · Aditya Maulana Pamungkas</b><br>Kategori Penangkalan · Kartika Cyber Hackathon 2026</div>
+      <div class="repo a" style="--t:calc(var(--b2) + 5s)">github.com/AndiArifAbdillah/pos-jaga-siber</div>
+    </div>
+  </section>
+
+  <!-- ============ LAYAR DASHBOARD (dipakai beberapa adegan) ============ -->
+  <div class="layar" id="layar">
+    <div class="layar-bar"><i></i><i></i><i></i><span class="url">localhost:8080 · Pos Jaga Siber</span><span class="jujur">Rekaman dashboard asli · lalu lintas dari contoh catatan sensor · blokir mode uji</span></div>
+    <div class="layar-isi"><div id="kanvas"></div></div>
+  </div>
+
+  <div class="vinyet"></div>
+  <div class="teks" id="teks"></div>
+  <div class="tirai" id="tirai"></div>
+  <div class="kemajuan"><span id="kemajuan"></span></div>
+</div>
+
+<script>
+"use strict";
+const VW = 1600, VH = 756;
+let D = null;          // data adegan yang sedang dirender
+let L = null;          // susunan layar dashboard untuk adegan ini
+let potongan = [];     // potongan teks terjemahan [{mulai, selesai, teks}]
+
+// ---------- susunan layar dashboard per adegan ----------
+// lapis: [nama gambar, mulai]; kamera: [waktu, kotak, jarak tepi]; sorot: [mulai, selesai, kotak, label, warna]; kursor: [waktu, kotak, klik?]
+const LAYAR = {
+  "demo-genset": b => ({
+    tampil: [0, 1e9],
+    lapis: [["tenang", 0], ["genset", b[1] + .4], ["genset-centang", b[3] + 4.2]],
+    kamera: [[0, "tenang:semua", 0], [b[0] + 1.2, "tenang:kotak-ringkas", 40], [b[1] + .4, "genset:daftar", 30],
+             [b[2], "genset:kotak-isolasi+rincian-atas", 40], [b[2] + 3.6, "genset:rincian-atas+rute", 50], [b[3], "genset:penjelasan", 30]],
+    sorot: [[b[1] + 1.4, b[2] - .2, "genset:daftar", "Kejadian muncul sendiri", "aksen"],
+            [b[2] + 1, b[2] + 3.4, "genset:kotak-isolasi", "Diisolasi otomatis", "merah"],
+            [b[2] + 4.2, b[3] - .2, "genset:rincian-atas", "KRITIS · diisolasi otomatis", "merah"],
+            [b[3] + .8, b[3] + 4, "genset:penjelasan", "Disusun AI lokal", "aksen"],
+            [b[3] + 4.6, 1e9, "genset-centang:langkah", "Langkah SOP dicentang", "aksen"]],
+    kursor: [[b[3] + 2.6, "genset:langkah"], [b[3] + 3.6, "genset:langkah", true]],
+  }),
+  "demo-petugas": b => ({
+    tampil: [0, 1e9],
+    lapis: [["kamera", 0], ["beacon", b[1]]],
+    kamera: [[0, "kamera:rincian-atas+rute", 40], [b[0] + 3.5, "kamera:ml+rute", 40], [b[1], "beacon:rincian-atas+rute", 50], [b[2], "beacon:tombol+penjelasan", 40]],
+    sorot: [[.8, b[0] + 3.2, "kamera:rincian-atas", "TINGGI · menunggu keputusan", "aksen"],
+            [b[0] + 4.4, b[1] - .2, "kamera:ml", "Skor AI perilaku ikut menguatkan", "biru"],
+            [b[1] + 1, b[2] - .2, "beacon:rincian-atas", "Sinyal teratur ke alamat luar", "aksen"],
+            [b[2] + 1, 1e9, "beacon:tombol", "Keputusan petugas: satu tombol", "aksen"]],
+    kursor: [[b[2] + 1.6, "beacon:tombol"]],
+  }),
+  "ai-perilaku": b => ({
+    tampil: [b[3] - .3, 1e9],
+    lapis: [["pintu", 0]],
+    kamera: [[0, "pintu:rincian-atas+ml", 40], [b[3] + 4, "pintu:ml+penjelasan", 30]],
+    sorot: [[b[3] + .9, 1e9, "pintu:ml", "Skor keanehan 1,00 · lengkap dengan alasannya", "biru"]],
+    kursor: [],
+  }),
+  "asisten": b => ({
+    tampil: [0, 1e9],
+    lapis: [["asisten-tanya", 0], ["asisten-jawab", b[0] + 3.4], ["asisten-tidak-tahu", b[2] + .2], ["laporan", b[2] + 4]],
+    kamera: [[0, "asisten-tanya:asisten", 30], [b[1], "asisten-jawab:jawaban+tanya", 30], [b[2] + .2, "asisten-tidak-tahu:jawaban+tanya", 30], [b[2] + 4, "laporan:laporan", 30]],
+    sorot: [[.8, b[0] + 2.6, "asisten-tanya:tanya", "Pertanyaan bahasa sehari-hari", "aksen"],
+            [b[1] + .6, b[2] - .2, "asisten-jawab:jawaban", "Jawaban dari data · ada nomor sumbernya", "aksen"],
+            [b[2] + .8, b[2] + 3.8, "asisten-tidak-tahu:jawaban", "Tidak ada datanya → tidak mengarang", "biru"],
+            [b[2] + 4.8, 1e9, "laporan:laporan", "Laporan ganti piket · satu tombol", "aksen"]],
+    kursor: [[b[0] + 1.6, "asisten-tanya:tanya"], [b[0] + 2.6, "asisten-tanya:tanya", true]],
+  }),
+  "bukti": b => ({
+    tampil: [b[1] + 3.6, 1e9],
+    lapis: [["putus", 0]],
+    kamera: [[0, "putus:banner+kotak-ringkas", 30], [b[2] + .2, "putus:bukti", 30]],
+    sorot: [[b[1] + 4.2, b[2] - .2, "putus:banner", "Catatan bukti rusak: entri hilang", "merah"],
+            [b[2] + .9, 1e9, "putus:kode", "Kode buku jaga", "aksen"]],
+    kursor: [],
+  }),
+};
+
+// ---------- bantuan ----------
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const ease = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+
+function kotak(spec) {
+  const [shot, keys] = spec.split(":");
+  const k = D.kotak[shot] || {};
+  let r = null;
+  for (const key of keys.split("+")) {
+    let b = key === "semua" ? [0, 0, VW, VH] : k[key];
+    if (!b) continue;
+    r = r ? [Math.min(r[0], b[0]), Math.min(r[1], b[1]), Math.max(r[0] + r[2], b[0] + b[2]) - Math.min(r[0], b[0]), Math.max(r[1] + r[3], b[1] + b[3]) - Math.min(r[1], b[1])] : b.slice();
+  }
+  return r || [0, 0, VW, VH];
+}
+
+function kameraDari(spec, pad) {
+  const [x, y, w, h] = kotak(spec);
+  const s = clamp(Math.min(VW / (w + 2 * pad), VH / (h + 2 * pad)), 1, 2.25);
+  return { s, cx: x + w / 2, cy: y + h / 2 };
+}
+
+function kameraPada(t) {
+  const keys = L.kamera.map(([w, spec, pad]) => ({ w, c: kameraDari(spec, pad ?? 40) }));
+  let i = 0;
+  while (i + 1 < keys.length && keys[i + 1].w <= t) i++;
+  const cur = keys[i];
+  if (i === 0 || t - cur.w >= 1.4) {
+    const hold = Math.max(0, t - cur.w - (i === 0 ? 0 : 1.4));
+    return { ...cur.c, s: cur.c.s * (1 + .018 * Math.min(hold / 8, 1)) };
+  }
+  const prev = keys[i - 1].c, p = ease(clamp((t - cur.w) / 1.4, 0, 1));
+  return { s: Math.exp(Math.log(prev.s) + (Math.log(cur.c.s) - Math.log(prev.s)) * p), cx: prev.cx + (cur.c.cx - prev.cx) * p, cy: prev.cy + (cur.c.cy - prev.cy) * p };
+}
+
+function gambarAtas(t) {
+  let top = L.lapis[0][0];
+  for (const [nama, mulai] of L.lapis) if (mulai <= t) top = nama;
+  return top;
+}
+
+// ---------- persiapan satu adegan ----------
+window.siapkan = async function (data) {
+  D = data;
+  document.querySelectorAll(".adegan").forEach(s => s.classList.toggle("aktif", s.id === data.id));
+  const root = document.getElementById(data.id);
+  root.style.setProperty("--D", data.D + "s");
+  data.b.forEach((v, i) => root.style.setProperty("--b" + i, v + "s"));
+  for (let i = data.b.length; i < 8; i++) root.style.setProperty("--b" + i, "9999s");
+  document.getElementById("bab").textContent = data.bab || "";
+  siapkanTeks(data.ketukan);
+  siapkanKhusus(data);
+
+  const layar = document.getElementById("layar");
+  const kanvas = document.getElementById("kanvas");
+  kanvas.innerHTML = "";
+  L = LAYAR[data.id] ? LAYAR[data.id](data.b) : null;
+  layar.classList.toggle("ada", !!L);
+  if (L) {
+    const names = [...new Set(L.lapis.map(l => l[0]))];
+    for (const n of names) {
+      const img = new Image();
+      img.src = "bahan/" + n + ".png";
+      img.dataset.nama = n;
+      const [w, h] = D.kotak[n].ukuran;
+      img.style.width = w + "px"; img.style.height = h + "px";
+      kanvas.appendChild(img);
+      await img.decode();
+    }
+    L.sorot.forEach((m, i) => {
+      const el = document.createElement("div");
+      el.className = "sorot " + (m[4] || "aksen");
+      el.id = "sorot-" + i;
+      el.innerHTML = "<b></b>";
+      el.querySelector("b").textContent = m[3];
+      kanvas.appendChild(el);
+    });
+    const kursor = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    kursor.id = "kursor"; kursor.setAttribute("viewBox", "0 0 24 24"); kursor.setAttribute("width", "30"); kursor.setAttribute("height", "30");
+    kursor.innerHTML = '<path d="M3 2l17 10-7 2 4 8-3 1-4-8-6 5z" fill="#fff" stroke="#111" stroke-width="1.2"/>';
+    const riak = document.createElement("div"); riak.id = "riak";
+    kanvas.appendChild(riak); kanvas.appendChild(kursor);
+  }
+  await document.fonts.ready;
+  for (const img of root.querySelectorAll("img")) { if (!img.complete) await img.decode().catch(() => {}); }
+  window.seek(0);
+  return true;
+};
+
+function siapkanTeks(ketukan) {
+  potongan = [];
+  for (const k of ketukan) {
+    const parts = pecah(k.teks);
+    const total = parts.reduce((a, p) => a + p.length, 0);
+    let mulai = k.mulai;
+    parts.forEach((p, i) => {
+      const selesai = i === parts.length - 1 ? k.selesai : mulai + (k.selesai - k.mulai) * p.length / total;
+      potongan.push({ mulai, selesai, teks: p });
+      mulai = selesai;
+    });
+  }
+}
+
+function pecah(teks) {
+  if (teks.length <= 96) return [teks];
+  const tengah = teks.length / 2;
+  let terbaik = -1;
+  for (const pemisah of [". ", ": ", ", "]) {
+    let i = teks.indexOf(pemisah);
+    while (i !== -1) {
+      if (terbaik === -1 || Math.abs(i - tengah) < Math.abs(terbaik - tengah)) terbaik = i;
+      i = teks.indexOf(pemisah, i + 1);
+    }
+    if (terbaik !== -1 && Math.abs(terbaik - tengah) < teks.length * .3) break;
+  }
+  if (terbaik === -1) return [teks];
+  return [teks.slice(0, terbaik + 1).trim(), teks.slice(terbaik + 1).trim()].flatMap(pecah);
+}
+
+// ---------- isi khusus adegan ----------
+function acak(seed) { return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
+
+function siapkanKhusus(data) {
+  if (data.id === "lab-genset") {
+    const cmd = data.bahan.perintah;
+    const el = document.getElementById("perintah");
+    el.textContent = cmd;
+    el.style.setProperty("--n", cmd.length);
+    el.style.animationTimingFunction = `steps(${cmd.length})`;
+    document.getElementById("keluaran").textContent = data.bahan.keluaran;
+  }
+  if (data.id === "ai-perilaku") {
+    const b = data.b;
+    // diagram pintu yang tiba-tiba menghubungi 14 perangkat
+    let s = "";
+    for (let i = 0; i < 14; i++) {
+      const a = (i / 14) * Math.PI * 2 - Math.PI / 2, x = 410 + Math.cos(a) * 300, y = 330 + Math.sin(a) * 270;
+      const t = `calc(var(--b0) + ${1.4 + i * .17}s)`;
+      s += `<line class="garis" pathLength="1000" x1="410" y1="330" x2="${x.toFixed(0)}" y2="${y.toFixed(0)}" stroke="#ff8f84" stroke-width="2.5" style="--t:${t}"/>`;
+      s += `<circle class="a" style="--in:skala; --t:${t}" cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="15" fill="#151b12" stroke="#a3ac97" stroke-width="3"/>`;
+    }
+    s += '<circle cx="410" cy="330" r="96" fill="#2a1512" stroke="#ff8f84" stroke-width="3"/>';
+    s += '<use href="#i-kunci" x="350" y="270" width="120" height="120" fill="none" stroke="#ff8f84" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+    s += '<rect x="206" y="440" width="408" height="50" rx="10" fill="#0b0f0a" stroke="#3d4936"/>';
+    s += '<text x="410" y="474" text-anchor="middle" font-family="Bahnschrift" font-weight="700" font-size="30" fill="#eef1e8">Kunci Pintu Gudang Senjata</text>';
+    document.getElementById("svg-pintu").innerHTML = s;
+
+    // Isolation Forest: kerumunan normal, satu titik aneh, lalu belahan acak
+    const r = acak(7);
+    const gauss = () => { let u = 0; for (let i = 0; i < 6; i++) u += r(); return u / 6 - .5; };
+    let f = '<rect x="0" y="0" width="744" height="540" rx="12" fill="rgba(11,15,10,.6)" stroke="#2c3527"/>';
+    for (let i = 0; i < 110; i++) f += `<circle cx="${(270 + gauss() * 560).toFixed(1)}" cy="${(320 + gauss() * 480).toFixed(1)}" r="6" fill="#9cc3f5" opacity=".75"/>`;
+    f += '<circle cx="640" cy="110" r="10" fill="#ff8f84"/>';
+    const cuts = [[560, 0, 560, 540, 0], [560, 200, 744, 200, 1], [420, 0, 420, 540, 2.4], [0, 420, 420, 420, 2.9], [190, 0, 190, 420, 3.4], [190, 250, 420, 250, 3.9], [330, 250, 330, 420, 4.4], [190, 350, 330, 350, 4.9]];
+    for (const [x1, y1, x2, y2, d] of cuts) {
+      f += `<line class="garis" pathLength="1000" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${d < 2 ? '#ff8f84' : '#bccc86'}" stroke-width="3" style="--t:calc(var(--b2) + ${.4 + d}s)"/>`;
+    }
+    f += '<rect class="a" style="--in:tampil; --t:calc(var(--b2) + 1.6s)" x="562" y="2" width="180" height="196" fill="rgba(255,143,132,.16)" stroke="#ff8f84" stroke-width="2"/>';
+    f += '<text class="a" style="--t:calc(var(--b2) + 1.9s)" x="652" y="236" text-anchor="middle" font-family="Bahnschrift" font-weight="700" font-size="23" fill="#ff8f84">aneh: 2 belahan</text>';
+    f += '<rect class="a" style="--in:tampil; --t:calc(var(--b2) + 5.6s)" x="192" y="252" width="136" height="96" fill="rgba(188,204,134,.14)" stroke="#bccc86" stroke-width="2"/>';
+    f += '<text class="a" style="--t:calc(var(--b2) + 5.9s)" x="290" y="480" text-anchor="middle" font-family="Bahnschrift" font-weight="700" font-size="26" fill="#bccc86">normal: butuh banyak belahan</text>';
+    document.getElementById("svg-if").innerHTML = f;
+  }
+  if (data.id === "bukti") {
+    const b = data.b;
+    const n = data.bahan.hilang;
+    const blok = [[`#${n - 2}`, "kejadian_baru", "9f3c…"], [`#${n - 1}`, "isolasi_otomatis", "3de4…"], [`#${n}`, "penjelasan_ai", "a17b…"], [`#${n + 1}`, "kejadian_baru", "c0e2…"]];
+    document.getElementById("teks-hilang").textContent = `Entri #${n} dihapus → rantai putus, langsung ketahuan`;
+    let h = "";
+    blok.forEach(([no, jenis, hash], i) => {
+      const t = `calc(var(--b0) + ${.3 + i * .5}s)`;
+      if (i) h += `<div class="sambung" style="--t:${t}; --t2:${i === 2 || i === 3 ? 'calc(var(--b1) + 1s)' : '9999s'}"></div>`;
+      const hapus = i === 2;
+      h += `<div class="blok ${hapus ? 'hapus' : 'a'}" style="--t:${t}; --u:calc(var(--b1) + 3.4s)${hapus ? '; --t2:calc(var(--b1) + .4s)' : ''}"><b>${no}</b><div>${jenis}</div><div>hash ${hash}</div><div class="stempel">✓ DITANDATANGANI</div></div>`;
+    });
+    const el = document.getElementById("rantai");
+    el.innerHTML = h;
+    el.querySelectorAll(".sambung").forEach(s => s.style.setProperty("--u", "calc(var(--b1) + 3.4s)"));
+    document.getElementById("kode-buku").textContent = data.bahan.kode;
+  }
+}
+
+// ---------- satu frame ----------
+window.seek = function (t) {
+  for (const a of document.getAnimations()) { a.pause(); a.currentTime = t * 1000; }
+
+  // teks terjemahan
+  const p = potongan.find(x => t >= x.mulai && t < x.selesai + .25);
+  const teks = document.getElementById("teks");
+  const isi = p ? p.teks : "";
+  if (teks.textContent !== isi) teks.textContent = isi;
+
+  // tirai dan kemajuan
+  const masuk = D.awal ? 1.0 : .35, keluar = D.akhir ? 1.8 : .35;
+  let tirai = 0;
+  if (t < masuk) tirai = 1 - t / masuk;
+  if (t > D.D - keluar) tirai = Math.max(tirai, (t - (D.D - keluar)) / keluar);
+  document.getElementById("tirai").style.opacity = clamp(tirai, 0, 1);
+  document.getElementById("kemajuan").style.width = ((D.offset + t) / D.total * 100).toFixed(3) + "%";
+
+  if (!L) return;
+  const layar = document.getElementById("layar");
+  const vis = clamp(Math.min((t - L.tampil[0]) / .5, (L.tampil[1] - t) / .5), 0, 1);
+  layar.style.opacity = vis;
+  layar.style.transform = `translateY(${(1 - vis) * 24}px)`;
+
+  const cam = kameraPada(t);
+  const top = gambarAtas(t);
+  const [W, H] = D.kotak[top].ukuran;
+  let tx = VW / 2 - cam.cx * cam.s, ty = VH / 2 - cam.cy * cam.s;
+  tx = clamp(tx, VW - W * cam.s, 0); ty = clamp(ty, Math.min(0, VH - H * cam.s), 0);
+  const kanvas = document.getElementById("kanvas");
+  kanvas.style.transform = `translate(${tx}px, ${ty}px) scale(${cam.s})`;
+
+  for (const img of kanvas.querySelectorAll("img")) {
+    const urut = L.lapis.filter(l => l[0] === img.dataset.nama).map(l => l[1]);
+    const mulai = Math.min(...urut);
+    img.style.opacity = L.lapis[0][0] === img.dataset.nama ? 1 : clamp((t - mulai) / .6, 0, 1);
+  }
+
+  L.sorot.forEach((m, i) => {
+    const el = document.getElementById("sorot-" + i);
+    const [x, y, w, h] = kotak(m[2]);
+    const o = clamp(Math.min((t - m[0]) / .35, (m[1] - t) / .35), 0, 1);
+    el.style.opacity = o;
+    const pad = 8;
+    Object.assign(el.style, { left: (x - pad) + "px", top: (y - pad) + "px", width: (w + 2 * pad) + "px", height: (h + 2 * pad) + "px",
+      borderWidth: (3.5 / cam.s) + "px", borderRadius: (12 / cam.s) + "px", boxShadow: `0 0 0 9999px rgba(0,0,0,${.3 * o})` });
+    const lbl = el.querySelector("b");
+    Object.assign(lbl.style, { fontSize: (19 / cam.s) + "px", padding: `${4 / cam.s}px ${10 / cam.s}px`, borderRadius: `${6 / cam.s}px ${6 / cam.s}px 0 0`, marginBottom: (0) + "px" });
+  });
+
+  const kursor = document.getElementById("kursor"), riak = document.getElementById("riak");
+  kursor.style.opacity = 0; riak.style.opacity = 0;
+  if (L.kursor.length && t >= L.kursor[0][0] - .4) {
+    const pos = L.kursor.map(([w, spec, klik]) => { const [x, y, ww, hh] = kotak(spec); return { w, x: x + ww * .5, y: y + hh * .5, klik }; });
+    let i = 0;
+    while (i + 1 < pos.length && pos[i + 1].w <= t) i++;
+    const cur = pos[i], prev = i ? pos[i - 1] : { x: cur.x + 260, y: cur.y + 180 };
+    const pr = ease(clamp((t - cur.w) / .8, 0, 1));
+    const x = prev.x + (cur.x - prev.x) * pr, y = prev.y + (cur.y - prev.y) * pr;
+    kursor.style.opacity = clamp((t - L.kursor[0][0] + .4) / .3, 0, 1);
+    kursor.style.transform = `translate(${x}px, ${y}px) scale(${1 / cam.s})`;
+    if (cur.klik) {
+      const k = (t - cur.w - .8) / .6;
+      if (k >= 0 && k <= 1) {
+        const r = (10 + 40 * k) / cam.s;
+        Object.assign(riak.style, { opacity: 1 - k, left: (x - r) + "px", top: (y - r) + "px", width: 2 * r + "px", height: 2 * r + "px", borderWidth: 3 / cam.s + "px" });
+      }
+    }
+  }
+};
+</script>
+</body>
+</html>
