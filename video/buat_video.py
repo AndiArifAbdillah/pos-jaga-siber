@@ -22,6 +22,7 @@ import asyncio
 import hashlib
 import json
 import math
+import re
 import subprocess
 import sys
 import time
@@ -65,6 +66,23 @@ def suara(text, voice, rate):
     return wav, ffprobe_duration(wav)
 
 
+def lafalkan(text, naskah):
+    """Ganti istilah dengan tulisan sesuai bunyinya, supaya diucapkan benar oleh suara narasi.
+
+    'lafal.semua' dipakai untuk semua suara (misalnya AI dibaca "Ei-Ai").
+    'lafal.suara_indonesia' hanya untuk suara id-ID: suara itu membaca kata Inggris
+    dengan ejaan Indonesia, jadi "machine learning" perlu ditulis "masyin lerning".
+    Suara multibahasa sudah bisa membaca kata Inggris, jadi tidak perlu.
+    """
+    lafal = naskah.get("lafal", {})
+    kamus = dict(lafal.get("semua", {}))
+    if naskah["suara"].startswith("id-ID"):
+        kamus.update(lafal.get("suara_indonesia", {}))
+    for istilah in sorted(kamus, key=len, reverse=True):
+        text = re.sub(rf"(?<!\w){re.escape(istilah)}(?!\w)", kamus[istilah], text)
+    return text
+
+
 def susun_waktu(naskah):
     """Hitung waktu mulai setiap ketukan dan panjang setiap adegan."""
     scenes, offset = [], 0.0
@@ -72,7 +90,7 @@ def susun_waktu(naskah):
         t = 1.2 if i == 0 else 0.5
         beats = []
         for k in adegan["ketukan"]:
-            wav, dur = suara(k.get("ucap", k["teks"]), naskah["suara"], naskah["kecepatan"])
+            wav, dur = suara(lafalkan(k.get("ucap", k["teks"]), naskah), naskah["suara"], naskah["kecepatan"])
             beats.append({"mulai": round(t, 3), "selesai": round(t + dur, 3), "teks": k["teks"], "wav": str(wav)})
             t += dur + k.get("jeda", 0.3)
         scenes.append({"id": adegan["id"], "bab": adegan["bab"], "D": round(t, 3), "offset": round(offset, 3), "ketukan": beats})

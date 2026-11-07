@@ -1,6 +1,6 @@
 # Pembuat video Pos Jaga Siber
 
-Folder ini berisi semua yang dibutuhkan untuk membuat ulang video presentasi (sekitar 5 menit 27 detik, 1920 × 1080). Video **tidak dibuat dengan AI pembuat video**. Gambarnya berasal dari:
+Folder ini berisi semua yang dibutuhkan untuk membuat ulang video presentasi (sekitar 5 menit 40 detik, 1920 × 1080). Video **tidak dibuat dengan AI pembuat video**. Gambarnya berasal dari:
 
 - **dashboard asli** yang direkam saat berjalan dengan model AI lokal,
 - **animasi penjelasan** yang digambar di `adegan.html`,
@@ -55,7 +55,8 @@ Render penuh memakan sekitar 10–15 menit. Hasilnya di `video/hasil/pos-jaga-si
 ## Mengubah video
 
 - **Kalimat narasi:** ubah `teks` di `naskah.json`. Kalau ada angka atau singkatan yang dibaca aneh, isi juga `ucap` dengan cara bacanya, misalnya `"teks": "48 MB"` dan `"ucap": "empat puluh delapan megabita"`.
-- **Suara:** ubah `suara` di `naskah.json`. Pilihannya `id-ID-ArdiNeural` (laki-laki) atau `id-ID-GadisNeural` (perempuan).
+- **Suara:** ubah `suara` di `naskah.json`. Pilihannya `id-ID-ArdiNeural` (laki-laki) atau `id-ID-GadisNeural` (perempuan). Bisa juga suara multibahasa seperti `en-US-AndrewMultilingualNeural`, yang membaca bahasa Indonesia sekaligus mengucapkan kata Inggris dengan benar.
+- **Cara baca istilah:** atur di bagian `lafal` di `naskah.json`. Contohnya, "AI" dibaca "ei ai". Suara id-ID membaca kata Inggris dengan ejaan Indonesia ("machine learning" jadi "macin learninang"), jadi istilah Inggris ditulis sesuai bunyinya di `lafal.suara_indonesia`, misalnya `"machine learning": "masyin lerning"`. Teks di layar tetap memakai tulisan aslinya.
 - **Gerakan kamera dan sorotan di dashboard:** ubah bagian `LAYAR` di `adegan.html`.
 - **Satu adegan saja:** `python video/buat_video.py --adegan solusi`.
 

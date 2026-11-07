@@ -1,7 +1,17 @@
 {
   "_catatan": "Naskah video Pos Jaga Siber. Setiap adegan berisi beberapa 'ketukan'. 'teks' tampil sebagai teks terjemahan di layar; 'ucap' (kalau ada) adalah versi yang dibacakan suara, misalnya angka ditulis dengan huruf. 'jeda' = diam setelah ketukan (detik).",
   "suara": "id-ID-ArdiNeural",
-  "kecepatan": "+4%",
+  "kecepatan": "+0%",
+  "lafal": {
+    "_catatan": "Cara baca istilah. 'semua' berlaku untuk semua suara; 'suara_indonesia' hanya untuk suara id-ID, yang membaca kata Inggris dengan ejaan Indonesia.",
+    "semua": {"AI": "eiai"},
+    "suara_indonesia": {
+      "machine learning": "masyin lerning",
+      "Isolation Forest": "aisolesyen forest",
+      "dashboard": "desbor",
+      "router": "rauter"
+    }
+  },
   "adegan": [
     {
       "id": "pembuka",
