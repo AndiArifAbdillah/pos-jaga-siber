@@ -81,6 +81,14 @@ def chapters():
     return "\n".join(lines)
 
 
+def kredit_narasi():
+    info_path = HERE / "kerja" / "narasi-info.json"
+    info = json.loads(info_path.read_text(encoding="utf-8")) if info_path.exists() else {"sumber": "buatan", "suara": "id-ID-ArdiNeural"}
+    if info["sumber"] == "rekaman":
+        return f"Narasi dibacakan oleh {info.get('pembaca') or 'anggota tim'}."
+    return f"Narasi memakai suara sintetis Microsoft ({info['suara']})."
+
+
 def main():
     OUT.mkdir(exist_ok=True)
     kotak = json.loads((BAHAN / "kotak.json").read_text(encoding="utf-8"))
@@ -132,7 +140,7 @@ Bab:
 
 Catatan: rekaman dashboard memakai contoh catatan sensor (mode demo) dan blokir mode uji. Serangan ke genset tiruan dijalankan sungguhan di lab tim.
 
-Komponen pihak ketiga: Suricata (OISF), aturan ET Open, MikroTik RouterOS/CHR, Ollama, model Qwen, Python, VirtualBox. Kode, dokumentasi, dan video dikembangkan dengan bantuan asisten AI (Claude, buatan Anthropic). Narasi memakai suara sintetis Microsoft (id-ID-ArdiNeural).
+Komponen pihak ketiga: Suricata (OISF), aturan ET Open, MikroTik RouterOS/CHR, Ollama, model Qwen, Python, VirtualBox. Kode, dokumentasi, dan video dikembangkan dengan bantuan asisten AI (Claude, buatan Anthropic). {kredit_narasi()}
 
 TAG
 keamanan siber, IDS, OT security, Modbus, Suricata, MikroTik, machine learning, Isolation Forest, AI lokal, Ollama, Kartika Cyber Hackathon 2026, TNI AD

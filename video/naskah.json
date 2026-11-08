@@ -1,7 +1,8 @@
 {
-  "_catatan": "Naskah video Pos Jaga Siber. Setiap adegan berisi beberapa 'ketukan'. 'teks' tampil sebagai teks terjemahan di layar; 'ucap' (kalau ada) adalah versi yang dibacakan suara, misalnya angka ditulis dengan huruf. 'jeda' = diam setelah ketukan (detik).",
+  "_catatan": "Naskah video Pos Jaga Siber. Setiap adegan berisi beberapa 'ketukan'. 'arahan' adalah petunjuk gaya baca untuk yang merekam suara sendiri. 'teks' tampil sebagai teks terjemahan di layar; 'ucap' (kalau ada) adalah versi yang dibacakan suara, misalnya angka ditulis dengan huruf. 'jeda' = diam setelah ketukan (detik).",
   "suara": "id-ID-ArdiNeural",
   "kecepatan": "+0%",
+  "pembaca_rekaman": "Andi Arif Abdillah",
   "lafal": {
     "_catatan": "Cara baca istilah. 'semua' berlaku untuk semua suara; 'suara_indonesia' hanya untuk suara id-ID, yang membaca kata Inggris dengan ejaan Indonesia.",
     "semua": {"AI": "eiai"},
@@ -16,6 +17,7 @@
     {
       "id": "pembuka",
       "bab": "",
+      "arahan": "Pelan dan tegang, seperti membuka cerita. Diam sebentar sebelum 'Inilah Pos Jaga Siber', lalu ucapkan dengan mantap.",
       "ketukan": [
         {"teks": "Pukul dua pagi di sebuah markas. Listrik PLN padam, dan genset seharusnya menyala.", "jeda": 0.4},
         {"teks": "Tapi seseorang di jaringan kantor baru saja mengirim perintah untuk mematikannya.", "jeda": 0.4},
@@ -26,6 +28,7 @@
     {
       "id": "masalah",
       "bab": "1 · Masalah",
+      "arahan": "Serius, seperti menjelaskan masalah nyata. Kalimat terakhir adalah pertanyaan: naikkan nada di ujungnya.",
       "ketukan": [
         {"teks": "Markas hari ini punya dua jaringan: komputer kantor, dan peralatan seperti genset, kamera CCTV, dan kunci pintu elektronik.", "jeda": 0.3},
         {"teks": "Peralatan ini tidak bisa dipasangi antivirus, jarang diperbarui, dan bahasanya tidak memakai kata sandi.", "jeda": 0.3},
@@ -36,6 +39,7 @@
     {
       "id": "solusi",
       "bab": "2 · Cara kerja",
+      "arahan": "Lebih cerah dan yakin, karena ini jawabannya. Tekan kata 'langsung memutus' dan 'tidak bisa diubah diam-diam'.",
       "ketukan": [
         {"teks": "Pos Jaga Siber adalah kotak penjaga di markas. Ia menerima salinan lalu lintas jaringan, tanpa mengganggu jaringan itu sendiri.", "jeda": 0.3},
         {"teks": "Serangan yang sudah dikenal ditangkap aturan Suricata. Yang belum dikenal, ditangkap AI yang mempelajari kebiasaan normal.", "jeda": 0.3},
@@ -47,6 +51,7 @@
     {
       "id": "suricata",
       "bab": "2 · Cara kerja: Suricata",
+      "arahan": "Santai, seperti menjelaskan ke teman. Tekan kata 'cocok' dan 'belum dikenal'.",
       "ketukan": [
         {"teks": "Lalu apa itu Suricata? Suricata adalah program pendeteksi serangan jaringan yang gratis dan terbuka, dikembangkan yayasan OISF dan dipakai luas di banyak negara.", "ucap": "Lalu, apa itu Suricata? Suricata adalah program pendeteksi serangan jaringan yang gratis dan terbuka, dikembangkan yayasan O I S F, dan dipakai luas di banyak negara.", "jeda": 0.3},
         {"teks": "Cara kerjanya seperti petugas pemeriksa di pos gerbang: setiap paket data yang lewat dibuka, lalu dicocokkan dengan buku aturan berisi ciri-ciri serangan.", "jeda": 0.3},
@@ -57,6 +62,7 @@
     {
       "id": "lab-genset",
       "bab": "3 · Ancamannya nyata",
+      "arahan": "Pelan. Tekan 'tanpa kata sandi apa pun' dan 'mematikannya'.",
       "ketukan": [
         {"teks": "Di lab kami, genset tiruan memakai bahasa Modbus yang sama dengan panel genset sungguhan.", "jeda": 0.3},
         {"teks": "Satu perintah dari jaringan, tanpa kata sandi apa pun, sudah cukup untuk mematikannya.", "jeda": 1.2}
@@ -65,6 +71,7 @@
     {
       "id": "demo-genset",
       "bab": "4 · Demo: serangan ke genset",
+      "arahan": "Sedikit lebih cepat dan bersemangat, seperti melaporkan kejadian yang sedang berlangsung. Tekan 'langsung' dan 'otomatis'.",
       "ketukan": [
         {"teks": "Berikut rekaman dashboard aslinya, berjalan di laptop dengan contoh catatan sensor.", "jeda": 0.3},
         {"teks": "Sebuah laptop asing muncul di jaringan kantor, lalu mengirim perintah tulis ke genset utama.", "jeda": 0.3},
@@ -75,6 +82,7 @@
     {
       "id": "demo-petugas",
       "bab": "5 · Petugas yang memutuskan",
+      "arahan": "Tenang dan jelas. Tekan 'keputusan tetap di tangan petugas'.",
       "ketukan": [
         {"teks": "Tidak semua kejadian diblokir otomatis. Kamera gerbang yang mengunggah 48 MB ke luar markas ditandai tinggi.", "ucap": "Tidak semua kejadian diblokir otomatis. Kamera gerbang yang mengunggah empat puluh delapan megabita ke luar markas, ditandai tinggi.", "jeda": 0.3},
         {"teks": "Laptop staf yang menghubungi alamat luar dengan jarak waktu sangat teratur, ciri program jahat yang melapor ke pengendalinya, juga ditandai.", "jeda": 0.3},
@@ -84,6 +92,7 @@
     {
       "id": "ai-perilaku",
       "bab": "6 · AI deteksi perilaku",
+      "arahan": "Bangun rasa penasaran di kalimat pertama, lalu jelaskan prinsipnya pelan-pelan. 'Machine learning' dan 'Isolation Forest' dibaca biasa dalam bahasa Inggris.",
       "ketukan": [
         {"teks": "Sekarang serangan yang tidak punya aturan sama sekali. Kunci pintu gudang senjata tiba-tiba menghubungi 14 perangkat dalam 10 detik.", "ucap": "Sekarang, serangan yang tidak punya aturan sama sekali. Kunci pintu gudang senjata tiba-tiba menghubungi empat belas perangkat, dalam sepuluh detik.", "jeda": 0.3},
         {"teks": "Di sinilah AI deteksi perilaku bekerja. Kotak mempelajari kebiasaan normal setiap jaringan dengan machine learning bernama Isolation Forest.", "ucap": "Di sinilah AI deteksi perilaku bekerja. Kotak mempelajari kebiasaan normal setiap jaringan, dengan machine learning bernama Isolation Forest.", "jeda": 0.3},
@@ -94,6 +103,7 @@
     {
       "id": "asisten",
       "bab": "7 · Asisten piket",
+      "arahan": "Ramah dan ringan.",
       "ketukan": [
         {"teks": "AI ketiga adalah asisten piket. Petugas cukup bertanya dengan bahasa sehari-hari.", "jeda": 0.3},
         {"teks": "Asisten mencari di catatan kotak dulu, lalu menjawab hanya dari data itu, lengkap dengan nomor kejadian sumbernya.", "jeda": 0.3},
@@ -103,6 +113,7 @@
     {
       "id": "bukti",
       "bab": "8 · Catatan bukti",
+      "arahan": "Serius dan tegas, terutama di 'rantainya putus'.",
       "ketukan": [
         {"teks": "Setiap kejadian dan tindakan petugas disimpan seperti rantai: setiap entri mengunci sidik jari entri sebelumnya, dan ditandatangani kotak.", "jeda": 0.3},
         {"teks": "Kalau satu entri saja dihapus untuk menghilangkan jejak, rantainya putus, dan kotak langsung menunjukkan entri mana yang hilang.", "jeda": 0.3},
@@ -112,6 +123,7 @@
     {
       "id": "pagar",
       "bab": "9 · Prinsip",
+      "arahan": "Tegas dan meyakinkan. Beri tekanan pada 'Tidak ada AI yang bisa memblokir'.",
       "ketukan": [
         {"teks": "Prinsip kami: AI menemukan dan menjelaskan, sedangkan aturan tetap dan manusia yang memutuskan. Tidak ada AI yang bisa memblokir.", "jeda": 0.3},
         {"teks": "Blokir otomatis hanya untuk kejadian kritis pada peralatan, berlaku 24 jam, dan tidak pernah menyentuh router atau kotak itu sendiri.", "ucap": "Blokir otomatis hanya untuk kejadian kritis pada peralatan, berlaku dua puluh empat jam, dan tidak pernah menyentuh router atau kotak itu sendiri.", "jeda": 0.8}
@@ -120,6 +132,7 @@
     {
       "id": "penutup",
       "bab": "10 · Siap dipasang",
+      "arahan": "Bangga dan mantap. Kalimat terakhir diucapkan pelan, frasa demi frasa.",
       "ketukan": [
         {"teks": "Perangkat lunaknya bebas biaya lisensi. Kotaknya cukup satu mini PC dengan dua colokan jaringan, ditambah router MikroTik yang umumnya sudah ada di markas.", "jeda": 0.3},
         {"teks": "Purwarupa ini lulus 41 tes otomatis, dan seluruh kode serta dokumentasinya terbuka untuk dewan juri.", "ucap": "Purwarupa ini lulus empat puluh satu tes otomatis, dan seluruh kode serta dokumentasinya terbuka untuk dewan juri.", "jeda": 0.4},

@@ -14,6 +14,8 @@ Folder ini berisi semua yang dibutuhkan untuk membuat ulang video presentasi (se
 | `rekam_dashboard.py` | Menjalankan kotak dalam mode demo, memutar skenario, dan memotret dashboard asli |
 | `adegan.html` | Panggung animasi. Setiap adegan bisa diputar ke detik mana pun |
 | `buat_video.py` | Membuat suara, menghitung waktu, merender frame, dan menggabungkan semuanya |
+| `rekaman.py` | Memakai rekaman suara sendiri: menulis naskah rekaman, membersihkan dan memotong rekaman per kalimat |
+| `naskah-rekaman.md` | Naskah bernomor untuk dibaca saat merekam suara sendiri |
 | `bahan/` | Hasil `rekam_dashboard.py` (tidak diunggah ke GitHub) |
 | `kerja/` | Berkas sementara: suara, potongan adegan, pratinjau (tidak diunggah) |
 | `hasil/` | Video jadi `pos-jaga-siber.mp4` dan teks `pos-jaga-siber.srt` (tidak diunggah) |
@@ -64,14 +66,32 @@ Waktu animasi mengikuti narasi. Kalau satu kalimat diubah, animasi adegan itu ik
 
 ## Memakai suara sendiri
 
-Juri biasanya lebih menghargai suara tim sendiri:
+Juri biasanya lebih menghargai suara tim sendiri, dan suara manusia jauh lebih hidup daripada suara buatan. Kamu tidak perlu membaca mengikuti video. Video yang menyesuaikan waktunya dengan suaramu.
 
-1. Putar `pos-jaga-siber.mp4` tanpa suara, lalu rekam diri kalian membaca teks yang muncul di layar, mengikuti waktunya.
-2. Gabungkan rekamannya dengan video:
+1. Buka [`naskah-rekaman.md`](naskah-rekaman.md). Isinya 41 kalimat bernomor, dengan arahan gaya baca di setiap adegan. Kalau naskah diubah, buat ulang dengan `python video/rekaman.py naskah`.
+2. Rekam dengan HP. Boleh satu berkas panjang, boleh juga beberapa berkas berurutan. **Diam sekitar 2 detik di antara kalimat.** Kalau salah, diam sebentar lalu ulangi kalimat itu. Yang dipakai adalah ulangan terakhir.
+3. Periksa hasil pemotongannya:
 
    ```bash
-   ffmpeg -i video/hasil/pos-jaga-siber.mp4 -i suara-tim.m4a -map 0:v -map 1:a -c:v copy -c:a aac -shortest video/hasil/pos-jaga-siber-suara-tim.mp4
+   python video/rekaman.py cek rekaman.m4a
    ```
+
+   Tabelnya menunjukkan bagian rekaman yang dipakai untuk setiap kalimat. Kalimat yang panjangnya jauh dari perkiraan ditandai "periksa". Potongan per kalimat ada di `video/kerja/rekaman/kalimat-NN.wav`, jadi bisa didengarkan satu per satu.
+4. Buat videonya:
+
+   ```bash
+   python video/buat_video.py --rekaman rekaman.m4a
+   ```
+
+   Kalau rekamannya beberapa berkas, tulis semuanya berurutan: `--rekaman adegan1.m4a adegan2.m4a ...`.
+
+Yang dilakukan pada rekaman:
+- Dengung rendah dibuang dan desis latar dikurangi.
+- Kekerasan suara disamakan dengan standar video, tanpa meratakan keras-lembutnya, supaya ekspresi bicara tetap utuh.
+- Rekaman dipotong per kalimat, dengan bantuan jeda diam di antara kalimat.
+- Setiap potongan dicocokkan dengan kalimat naskah berdasarkan panjangnya. Potongan yang tidak cocok dilewati, misalnya ulangan atau batuk.
+
+Kalau ada kalimat yang tertukar, salin `video/kerja/rekaman/pemetaan-otomatis.json` menjadi `pemetaan.json` di folder yang sama. Ubah angka detik awal dan akhir kalimat itu, lalu jalankan lagi. Nama pembaca di deskripsi YouTube diambil dari `pembaca_rekaman` di `naskah.json`.
 
 ## Kejujuran isi video
 

@@ -83,14 +83,23 @@ def lafalkan(text, naskah):
     return text
 
 
-def susun_waktu(naskah):
-    """Hitung waktu mulai setiap ketukan dan panjang setiap adegan."""
+def susun_waktu(naskah, rekaman=None):
+    """Hitung waktu mulai setiap ketukan dan panjang setiap adegan.
+
+    rekaman: daftar wav per kalimat dari suara sendiri (lihat rekaman.py). Kalau
+    tidak ada, narasi dibuat dengan suara buatan.
+    """
     scenes, offset = [], 0.0
+    urutan = iter(rekaman or [])
     for i, adegan in enumerate(naskah["adegan"]):
         t = 1.2 if i == 0 else 0.5
         beats = []
         for k in adegan["ketukan"]:
-            wav, dur = suara(lafalkan(k.get("ucap", k["teks"]), naskah), naskah["suara"], naskah["kecepatan"])
+            if rekaman:
+                wav = next(urutan)
+                dur = ffprobe_duration(wav)
+            else:
+                wav, dur = suara(lafalkan(k.get("ucap", k["teks"]), naskah), naskah["suara"], naskah["kecepatan"])
             beats.append({"mulai": round(t, 3), "selesai": round(t + dur, 3), "teks": k["teks"], "wav": str(wav)})
             t += dur + k.get("jeda", 0.3)
         scenes.append({"id": adegan["id"], "bab": adegan["bab"], "D": round(t, 3), "offset": round(offset, 3), "ketukan": beats})
@@ -205,13 +214,23 @@ def main():
     parser.add_argument("--pratinjau", action="store_true", help="hanya gambar contoh per adegan")
     parser.add_argument("--adegan", nargs="*", help="hanya adegan tertentu")
     parser.add_argument("--lanjut", action="store_true", help="pakai bagian adegan yang sudah selesai dirender")
+    parser.add_argument("--rekaman", nargs="+", metavar="BERKAS",
+                        help="pakai rekaman suara sendiri (berurutan) sebagai narasi; lihat rekaman.py")
     args = parser.parse_args()
 
     WORK.mkdir(parents=True, exist_ok=True)
     HASIL.mkdir(parents=True, exist_ok=True)
     naskah = json.loads((HERE / "naskah.json").read_text(encoding="utf-8"))
     print("Menyiapkan suara narasi...")
-    scenes = susun_waktu(naskah)
+    wavs = None
+    if args.rekaman:
+        from rekaman import perkiraan_dan_teks, siapkan
+        perkiraan, teks = perkiraan_dan_teks(naskah)
+        wavs, laporan = siapkan([Path(f) for f in args.rekaman], perkiraan, teks)
+        print("\n".join(laporan))
+    info = {"sumber": "rekaman", "pembaca": naskah.get("pembaca_rekaman", "")} if wavs else {"sumber": "buatan", "suara": naskah["suara"]}
+    (WORK / "narasi-info.json").write_text(json.dumps(info, ensure_ascii=False), encoding="utf-8")
+    scenes = susun_waktu(naskah, wavs)
     total = scenes[-1]["offset"] + scenes[-1]["D"]
     print(f"Panjang video: {int(total // 60)} menit {total % 60:.0f} detik")
     (WORK / "waktu.json").write_text(json.dumps(scenes, ensure_ascii=False, indent=1), encoding="utf-8")
