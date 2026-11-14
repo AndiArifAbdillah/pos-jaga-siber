@@ -1,7 +1,8 @@
 """Membuat video Pos Jaga Siber dari naskah, gambar dashboard asli, dan panggung animasi.
 
 Urutan kerja:
-  1. Suara: setiap ketukan naskah dibacakan suara bahasa Indonesia (edge-tts).
+  1. Suara: setiap ketukan naskah dibacakan suara bahasa Indonesia (edge-tts atau Gemini),
+     atau diambil dari rekaman suara sendiri (--rekaman).
   2. Waktu: panjang suara menentukan kapan setiap ketukan dan adegan dimulai.
   3. Gambar: adegan.html diputar frame demi frame di Edge tanpa layar, lalu
      setiap frame dipotret (1920x1080, 25 frame per detik).
@@ -69,15 +70,19 @@ def suara(text, voice, rate):
 def lafalkan(text, naskah):
     """Ganti istilah dengan tulisan sesuai bunyinya, supaya diucapkan benar oleh suara narasi.
 
-    'lafal.semua' dipakai untuk semua suara (misalnya AI dibaca "Ei-Ai").
+    'lafal.semua' dipakai untuk semua suara Microsoft (misalnya AI dibaca "Ei-Ai").
+    'lafal.gemini' khusus untuk suara Gemini, yang sudah bisa membaca kata Inggris.
     'lafal.suara_indonesia' hanya untuk suara id-ID: suara itu membaca kata Inggris
     dengan ejaan Indonesia, jadi "machine learning" perlu ditulis "masyin lerning".
     Suara multibahasa sudah bisa membaca kata Inggris, jadi tidak perlu.
     """
     lafal = naskah.get("lafal", {})
-    kamus = dict(lafal.get("semua", {}))
-    if naskah["suara"].startswith("id-ID"):
-        kamus.update(lafal.get("suara_indonesia", {}))
+    if naskah.get("mesin") == "gemini":
+        kamus = dict(lafal.get("gemini", {}))
+    else:
+        kamus = dict(lafal.get("semua", {}))
+        if naskah["suara"].startswith("id-ID"):
+            kamus.update(lafal.get("suara_indonesia", {}))
     for istilah in sorted(kamus, key=len, reverse=True):
         text = re.sub(rf"(?<!\w){re.escape(istilah)}(?!\w)", kamus[istilah], text)
     return text
@@ -98,6 +103,9 @@ def susun_waktu(naskah, rekaman=None):
             if rekaman:
                 wav = next(urutan)
                 dur = ffprobe_duration(wav)
+            elif naskah.get("mesin") == "gemini":
+                from suara_gemini import buat_suara, gaya_adegan
+                wav, dur = buat_suara(lafalkan(k.get("ucap", k["teks"]), naskah), gaya_adegan(adegan, naskah), naskah["gemini"])
             else:
                 wav, dur = suara(lafalkan(k.get("ucap", k["teks"]), naskah), naskah["suara"], naskah["kecepatan"])
             beats.append({"mulai": round(t, 3), "selesai": round(t + dur, 3), "teks": k["teks"], "wav": str(wav)})
@@ -228,7 +236,12 @@ def main():
         perkiraan, teks = perkiraan_dan_teks(naskah)
         wavs, laporan = siapkan([Path(f) for f in args.rekaman], perkiraan, teks)
         print("\n".join(laporan))
-    info = {"sumber": "rekaman", "pembaca": naskah.get("pembaca_rekaman", "")} if wavs else {"sumber": "buatan", "suara": naskah["suara"]}
+    if wavs:
+        info = {"sumber": "rekaman", "pembaca": naskah.get("pembaca_rekaman", "")}
+    elif naskah.get("mesin") == "gemini":
+        info = {"sumber": "gemini", "suara": naskah["gemini"]["suara"], "model": naskah["gemini"]["model"]}
+    else:
+        info = {"sumber": "buatan", "suara": naskah["suara"]}
     (WORK / "narasi-info.json").write_text(json.dumps(info, ensure_ascii=False), encoding="utf-8")
     scenes = susun_waktu(naskah, wavs)
     total = scenes[-1]["offset"] + scenes[-1]["D"]

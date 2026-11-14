@@ -257,6 +257,7 @@ def siapkan(files, perkiraan, teks):
 def perkiraan_dan_teks(naskah):
     sys.path.insert(0, str(HERE))
     from buat_video import lafalkan, suara
+    naskah = dict(naskah, mesin="edge")
     perk, teks = [], []
     for adegan in naskah["adegan"]:
         for k in adegan["ketukan"]:

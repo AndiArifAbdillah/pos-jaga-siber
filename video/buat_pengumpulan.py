@@ -86,6 +86,8 @@ def kredit_narasi():
     info = json.loads(info_path.read_text(encoding="utf-8")) if info_path.exists() else {"sumber": "buatan", "suara": "id-ID-ArdiNeural"}
     if info["sumber"] == "rekaman":
         return f"Narasi dibacakan oleh {info.get('pembaca') or 'anggota tim'}."
+    if info["sumber"] == "gemini":
+        return f"Narasi memakai suara AI Google Gemini ({info['model']}, suara {info['suara']})."
     return f"Narasi memakai suara sintetis Microsoft ({info['suara']})."
 
 

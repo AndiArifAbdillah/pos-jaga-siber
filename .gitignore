@@ -21,3 +21,8 @@ venv/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Kunci API (jangan pernah diunggah)
+.env
+*.env
+kunci-*.txt
