@@ -275,8 +275,78 @@ def naskah_web(naskah, path):
     return nomor
 
 
+def teks_bagian(naskah):
+    """Isi 4 bagian (gaya, teks) seperti di naskah web."""
+    sys.path.insert(0, str(HERE))
+    from buat_video import lafalkan
+    n = dict(naskah, mesin="gemini")
+    per_id = {a["id"]: a for a in n["adegan"]}
+    hasil = []
+    for ids in BAGIAN_WEB:
+        adegan = [per_id[x] for x in ids]
+        gaya = n["gemini"]["gaya_dasar"] + ". Scene moods in order: " + "; then ".join(a["gaya_ai"] for a in adegan) + "."
+        kalimat = [lafalkan(k.get("ucap", k["teks"]), n) for a in adegan for k in a["ketukan"]]
+        hasil.append((gaya, "\n<short pause>\n".join(kalimat)))
+    return hasil
+
+
+class BatasHarian(Exception):
+    pass
+
+
+def buat_bagian_api(naskah, voice, models):
+    """Buat 4 bagian narasi lewat API: hanya 4 permintaan, cukup untuk jatah gratis harian.
+
+    Semua bagian memakai model yang sama. Kalau satu model kena batas harian,
+    keempat bagian diulang dengan model berikutnya. Hasil: (model, [wav]).
+    """
+    bagian = teks_bagian(naskah)
+    for model in models:
+        folder = HERE / "kerja" / "gemini-bagian" / f"{model}-{voice}"
+        folder.mkdir(parents=True, exist_ok=True)
+        wavs = []
+        try:
+            for i, (gaya, teks) in enumerate(bagian, 1):
+                wav = folder / f"bagian-{i}.wav"
+                if not wav.exists():
+                    for coba in range(5):
+                        try:
+                            print(f"  {model}, suara {voice}: bagian {i} dari 4...", flush=True)
+                            audio = _minta(teks, gaya, model, voice)
+                            break
+                        except urllib.error.HTTPError as e:
+                            tunggu, pesan = _jeda_coba(e)
+                            if e.code == 429 and "per day" in pesan:
+                                raise BatasHarian(pesan)
+                            if e.code == 404:
+                                raise BatasHarian(f"model {model} tidak tersedia")
+                            if e.code in (429, 500, 503) and coba < 4:
+                                print(f"    sibuk ({e.code}), tunggu {tunggu or 20:.0f} detik", flush=True)
+                                time.sleep(tunggu or 20)
+                                continue
+                            raise SystemExit(f"Gemini menolak permintaan ({e.code}): {pesan}")
+                    mentah = folder / f"bagian-{i}.raw"
+                    mentah.write_bytes(audio)
+                    masuk = ["-i", str(mentah)] if audio[:4] == b"RIFF" else ["-f", "s16le", "-ar", "24000", "-ac", "1", "-i", str(mentah)]
+                    subprocess.run(["ffmpeg", "-v", "error", "-y", *masuk, "-ar", str(RATE), "-ac", "1", "-sample_fmt", "s16", str(wav)], check=True)
+                    mentah.unlink()
+                wavs.append(wav)
+            return model, wavs
+        except BatasHarian as e:
+            print(f"  {model} tidak bisa dipakai sekarang ({str(e)[:120]}). Coba model berikutnya.", flush=True)
+    raise SystemExit("Semua model suara Gemini sedang kena batas harian untuk kunci ini.")
+
+
 def main():
     naskah = json.loads((HERE / "naskah.json").read_text(encoding="utf-8"))
+    if len(sys.argv) >= 2 and sys.argv[1] == "bagian":
+        voice = sys.argv[2] if len(sys.argv) >= 3 else naskah["gemini"]["suara"]
+        models = sys.argv[3:] or ["gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts", "gemini-2.5-flash-preview-tts"]
+        model, wavs = buat_bagian_api(naskah, voice, models)
+        print(f"MODEL={model}")
+        for w in wavs:
+            print(f"BERKAS={w}  ({ffprobe_duration(w):.1f} detik)")
+        return 0
     if len(sys.argv) >= 2 and sys.argv[1] == "web":
         out = Path(sys.argv[2]) if len(sys.argv) >= 3 else HERE / "naskah-ai-studio.md"
         print(f"{naskah_web(naskah, out)} kalimat ditulis ke {out}")
