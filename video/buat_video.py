@@ -224,6 +224,8 @@ def main():
     parser.add_argument("--lanjut", action="store_true", help="pakai bagian adegan yang sudah selesai dirender")
     parser.add_argument("--rekaman", nargs="+", metavar="BERKAS",
                         help="pakai rekaman suara sendiri (berurutan) sebagai narasi; lihat rekaman.py")
+    parser.add_argument("--asal-rekaman", metavar="TEKS",
+                        help='asal suara rekaman untuk deskripsi YouTube, misalnya "suara AI Google Gemini (AI Studio, suara Charon)"')
     args = parser.parse_args()
 
     WORK.mkdir(parents=True, exist_ok=True)
@@ -237,7 +239,7 @@ def main():
         wavs, laporan = siapkan([Path(f) for f in args.rekaman], perkiraan, teks)
         print("\n".join(laporan))
     if wavs:
-        info = {"sumber": "rekaman", "pembaca": naskah.get("pembaca_rekaman", "")}
+        info = {"sumber": "rekaman", "pembaca": naskah.get("pembaca_rekaman", ""), "asal": args.asal_rekaman or ""}
     elif naskah.get("mesin") == "gemini":
         info = {"sumber": "gemini", "suara": naskah["gemini"]["suara"], "model": naskah["gemini"]["model"]}
     else:

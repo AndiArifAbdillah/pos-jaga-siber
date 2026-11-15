@@ -6,6 +6,11 @@ di PowerShell (ganti KUNCI dengan kunci milikmu):
 
     [Environment]::SetEnvironmentVariable("GEMINI_API_KEY", "KUNCI", "User")
 
+Kalau kunci sudah ada di berkas pengaturan lain (JSON dengan "gemini_api_key"),
+tunjuk berkasnya lewat GEMINI_KEY_FILE, misalnya:
+
+    GEMINI_KEY_FILE=path/ke/settings.json python video/suara_gemini.py contoh
+
 Kunci tidak pernah ditulis ke berkas proyek atau ke layar. Yang dikirim ke Google
 hanya kalimat naskah dan petunjuk gaya baca.
 
@@ -34,14 +39,35 @@ MODEL_CADANGAN = ["gemini-3.8-flash-tts", "gemini-3.1-flash-tts-preview", "gemin
 _cara = {"mode": None}  # "interactions" atau "generate", ditentukan saat permintaan pertama berhasil
 
 
+def _kunci_dari_berkas(path):
+    """Kunci dari berkas pengaturan: JSON (gemini_api_key / GEMINI_API_KEY / api_key) atau teks biasa."""
+    teks = Path(path).read_text(encoding="utf-8-sig").strip()
+    try:
+        data = json.loads(teks)
+    except json.JSONDecodeError:
+        return teks
+    for nama in ("gemini_api_key", "GEMINI_API_KEY", "api_key"):
+        if isinstance(data, dict) and data.get(nama):
+            return data[nama]
+    return None
+
+
+def _asli(k):
+    """Abaikan tulisan contoh seperti "KUNCI" atau "ISI_API_KEY_DI_SINI"."""
+    return k if k and k.strip() and k.strip().upper() not in ("KUNCI", "KEY") and not k.strip().upper().startswith("ISI_") else None
+
+
 def kunci():
-    k = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    k = None
+    if os.environ.get("GEMINI_KEY_FILE"):  # berkas yang ditunjuk langsung didahulukan
+        k = _asli(_kunci_dari_berkas(os.environ["GEMINI_KEY_FILE"]))
+    k = k or _asli(os.environ.get("GEMINI_API_KEY")) or _asli(os.environ.get("GOOGLE_API_KEY"))
     if not k and sys.platform == "win32":
         # variabel yang baru disetel lewat PowerShell belum terlihat oleh proses yang sudah berjalan
         import winreg
         try:
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as reg:
-                k = winreg.QueryValueEx(reg, "GEMINI_API_KEY")[0]
+                k = _asli(winreg.QueryValueEx(reg, "GEMINI_API_KEY")[0])
         except OSError:
             k = None
     if not k:
@@ -199,8 +225,62 @@ def contoh(naskah, suara_list):
         print("  dibuat:", hasil, flush=True)
 
 
+BAGIAN_WEB = [["pembuka", "masalah", "solusi"], ["suricata", "lab-genset", "demo-genset"],
+              ["demo-petugas", "ai-perilaku", "asisten"], ["bukti", "pagar", "penutup"]]
+
+
+def naskah_web(naskah, path):
+    """Naskah 4 bagian untuk ditempel di situs Google AI Studio (tanpa kunci API).
+
+    Audio hasilnya diproses seperti rekaman suara sendiri:
+    python video/buat_video.py --rekaman bagian-1.wav bagian-2.wav bagian-3.wav bagian-4.wav --asal-rekaman "..."
+    """
+    sys.path.insert(0, str(HERE))
+    from buat_video import lafalkan
+    n = dict(naskah, mesin="gemini")
+    per_id = {a["id"]: a for a in n["adegan"]}
+    baris = [
+        "# Naskah untuk Google AI Studio (suara AI Gemini)",
+        "",
+        "Naskah video dibagi menjadi 4 bagian. Setiap bagian dibuat suaranya sekali, lalu diunduh.",
+        "",
+        "## Langkah",
+        "",
+        "1. Buka **aistudio.google.com**, lalu pilih halaman pembuat suara (*Generate speech* / *Speech*).",
+        "2. Pilih model **Gemini 3.8 Flash TTS**. Kalau model itu menolak karena batas harian, pilih model TTS lain, tapi **pakai model yang sama untuk keempat bagian**.",
+        "3. Pilih mode **satu pembicara** (*single speaker*), lalu pilih suara **Charon** atau **Orus**. **Pakai suara yang sama untuk keempat bagian.**",
+        "4. Untuk setiap bagian di bawah:",
+        "   - Kalau ada kotak *Style instructions*, salin isi **Gaya** ke sana. Kalau tidak ada, lewati.",
+        "   - Salin isi **Teks** ke kotak teks, lalu klik **Run**.",
+        "   - Setelah suaranya jadi, unduh audionya. Beri nama `bagian-1`, `bagian-2`, dan seterusnya.",
+        "5. Kirim keempat berkas ke chat, lalu sebutkan suara yang dipakai.",
+        "",
+        "Teks jangan diubah. Tanda `<short pause>` membuat jeda pendek di antara kalimat, supaya audionya bisa dipotong per kalimat. "
+        "Kalau tanda itu malah ikut dibacakan, hapus semua tanda itu dan ganti dengan baris kosong.",
+        "",
+    ]
+    nomor = 0
+    for i, ids in enumerate(BAGIAN_WEB, 1):
+        adegan = [per_id[x] for x in ids]
+        gaya = (n["gemini"]["gaya_dasar"] + ". Scene moods in order: " +
+                "; then ".join(a["gaya_ai"] for a in adegan) + ".")
+        kalimat = []
+        for a in adegan:
+            for k in a["ketukan"]:
+                nomor += 1
+                kalimat.append(lafalkan(k.get("ucap", k["teks"]), n))
+        baris += [f"## Bagian {i} (kalimat {nomor - len(kalimat) + 1}–{nomor})", "", "**Gaya:**", "", "```", gaya, "```", "",
+                  "**Teks:**", "", "```", "\n<short pause>\n".join(kalimat), "```", ""]
+    path.write_text("\n".join(baris), encoding="utf-8")
+    return nomor
+
+
 def main():
     naskah = json.loads((HERE / "naskah.json").read_text(encoding="utf-8"))
+    if len(sys.argv) >= 2 and sys.argv[1] == "web":
+        out = Path(sys.argv[2]) if len(sys.argv) >= 3 else HERE / "naskah-ai-studio.md"
+        print(f"{naskah_web(naskah, out)} kalimat ditulis ke {out}")
+        return 0
     if len(sys.argv) >= 2 and sys.argv[1] == "contoh":
         suara_list = sys.argv[2:] or ["Charon", "Orus", "Sadaltager", "Algenib", "Kore", "Sulafat"]
         contoh(naskah, suara_list)

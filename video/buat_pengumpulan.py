@@ -84,6 +84,8 @@ def chapters():
 def kredit_narasi():
     info_path = HERE / "kerja" / "narasi-info.json"
     info = json.loads(info_path.read_text(encoding="utf-8")) if info_path.exists() else {"sumber": "buatan", "suara": "id-ID-ArdiNeural"}
+    if info["sumber"] == "rekaman" and info.get("asal"):
+        return f"Narasi memakai {info['asal']}."
     if info["sumber"] == "rekaman":
         return f"Narasi dibacakan oleh {info.get('pembaca') or 'anggota tim'}."
     if info["sumber"] == "gemini":

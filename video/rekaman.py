@@ -133,12 +133,15 @@ def energi(path, frame_s=0.02):
     return np.concatenate(out), frame_s
 
 
-def potong(db, frame_s, jeda_pisah):
-    """Bagian bersuara, dipisah oleh diam yang lebih panjang dari jeda_pisah detik."""
+def potong(db, frame_s, jeda_pisah=0.25, minimum=0.15):
+    """Bagian bersuara, dipisah oleh diam yang lebih panjang dari jeda_pisah detik.
+
+    Sengaja dipotong halus (juga di jeda koma); penggabungan kembali menjadi
+    kalimat utuh dilakukan oleh cocokkan_halus().
+    """
     lantai, puncak = np.percentile(db, 10), np.percentile(db, 97)
     batas = max(lantai + 10, puncak - 32)
     aktif = db > batas
-    # hilangkan bunyi pendek (klik, napas) dan isi lubang pendek di tengah kata
     segs, mulai = [], None
     for i, a in enumerate(np.append(aktif, False)):
         if a and mulai is None:
@@ -152,11 +155,76 @@ def potong(db, frame_s, jeda_pisah):
             gabung[-1][1] = s[1]
         else:
             gabung.append(s)
-    return [s for s in gabung if s[1] - s[0] >= 0.3]
+    # buang bunyi sangat pendek (klik, napas)
+    return [s for s in gabung if s[1] - s[0] >= minimum]
 
 
-def cocokkan(segs, perkiraan):
-    """Pasangkan potongan dengan kalimat naskah berdasarkan panjangnya (pemrograman dinamis).
+def cocokkan_halus(segs, perkiraan):
+    """Untuk audio dengan jeda pendek di antara kalimat, seperti hasil suara AI.
+
+    Pasangkan potongan dengan kalimat naskah berdasarkan panjangnya (pemrograman dinamis).
+    Setiap kalimat memakai satu atau beberapa potongan berurutan. Menggabungkan
+    potongan melewati jeda panjang makin mahal, jadi batas kalimat cenderung jatuh
+    di jeda terpanjang. Potongan di antara kalimat boleh dilewati (ulangan, batuk).
+    Melewati potongan yang mirip kalimat berikutnya lebih murah, sehingga ulangan
+    terakhir yang dipakai.
+    """
+    n, m = len(perkiraan), len(segs)
+    if m < n:
+        return None
+    LEWAT, SIGMA, MAKS_GABUNG, MAKS_LEWAT = 1.5, 0.25, 14, 14
+    # biaya menggabungkan potongan s dengan s+1, berdasarkan panjang jeda di antaranya
+    gc = [0.0]
+    for s in range(m - 1):
+        g = segs[s + 1][0] - segs[s][1]
+        gc.append(gc[-1] + 0.1 + 0.8 * min(g, 1.2) + 2.0 * max(0.0, g - 1.2))
+    panjang = [s[1] - s[0] for s in segs]
+    rasio = sum(panjang) / sum(perkiraan)
+    INF = float("inf")
+    for _ in range(3):
+        best = [[INF] * (m + 1) for _ in range(n + 1)]
+        asal = [[None] * (m + 1) for _ in range(n + 1)]
+        best[0][0] = 0.0
+        for i in range(1, n + 1):
+            harap = perkiraan[i - 1] * rasio
+            # biaya melewati setiap potongan sebelum kalimat i (prefix sum)
+            sk = [0.0]
+            for s in range(m):
+                mirip = (math.log((panjang[s] + 1) / (harap + 1)) / SIGMA) ** 2
+                sk.append(sk[-1] + LEWAT - 0.5 * math.exp(-mirip / 2))
+            prev = best[i - 1]
+            for j in range(1, m + 1):  # kalimat i berakhir di potongan j-1
+                for a in range(j - 1, max(-1, j - 1 - MAKS_GABUNG), -1):  # dimulai di potongan a
+                    d = segs[j - 1][1] - segs[a][0]
+                    # +1 detik supaya kalimat pendek tidak terlalu dihukum karena selisih kecil
+                    biaya = (math.log((d + 1) / (harap + 1)) / SIGMA) ** 2 + (gc[j - 1] - gc[a])
+                    if biaya > 40:
+                        if d > harap:
+                            break
+                        continue
+                    for p in range(a, max(-1, a - MAKS_LEWAT), -1):  # potongan p..a-1 dilewati
+                        if prev[p] == INF:
+                            continue
+                        c = prev[p] + (sk[a] - sk[p]) + biaya
+                        if c < best[i][j]:
+                            best[i][j], asal[i][j] = c, (p, a)
+        akhir = min(range(1, m + 1), key=lambda j: best[n][j] + LEWAT * (m - j))
+        if best[n][akhir] == INF:
+            return None
+        hasil, j = [], akhir
+        for i in range(n, 0, -1):
+            p, a = asal[i][j]
+            hasil.append((a, j - 1))
+            j = p
+        hasil.reverse()
+        rasio = sum(segs[b][1] - segs[a][0] for a, b in hasil) / sum(perkiraan)
+    return hasil
+
+
+def cocokkan_kasar(segs, perkiraan):
+    """Untuk rekaman dengan jeda panjang (sekitar 2 detik) di antara kalimat, seperti rekaman suara sendiri.
+
+    Pasangkan potongan dengan kalimat naskah berdasarkan panjangnya (pemrograman dinamis).
 
     Setiap kalimat memakai 1–3 potongan berurutan (kalimat dengan jeda di tengah).
     Potongan di antaranya boleh dilewati (ulangan, batuk). Melewati potongan yang
@@ -218,16 +286,27 @@ def siapkan(files, perkiraan, teks):
         dilewati = []
     else:
         db, frame_s = energi(bersih)
-        hasil = segs = None
-        for jeda in (1.1, 0.85, 0.65, 0.5):
-            segs = potong(db, frame_s, jeda)
-            if len(segs) >= len(perkiraan):
-                hasil = cocokkan(segs, perkiraan)
-                if hasil:
-                    break
+        halus = potong(db, frame_s)
+        jeda_panjang = sum(1 for x, y in zip(halus, halus[1:]) if y[0] - x[1] >= 1.0)
+        hasil = None
+        if jeda_panjang >= 0.6 * len(perkiraan):
+            # rekaman dengan jeda panjang di antara kalimat (suara sendiri)
+            for jeda in (1.1, 0.85, 0.65, 0.5):
+                segs = potong(db, frame_s, jeda, 0.3)
+                if len(segs) >= len(perkiraan):
+                    hasil = cocokkan_kasar(segs, perkiraan)
+                    if hasil:
+                        laporan.append("Cara potong: jeda panjang antarkalimat (rekaman suara sendiri).")
+                        break
+        if not hasil:
+            # jeda antarkalimat pendek (misalnya suara AI): potong halus, lalu gabungkan
+            segs = halus
+            hasil = cocokkan_halus(segs, perkiraan)
+            if hasil:
+                laporan.append("Cara potong: jeda pendek antarkalimat (misalnya suara AI).")
         if not hasil:
             raise SystemExit(f"Rekaman hanya terpotong menjadi {len(segs)} bagian, padahal naskah punya {len(perkiraan)} kalimat. "
-                             "Pastikan ada jeda diam sekitar 2 detik di antara kalimat.")
+                             "Pastikan ada jeda diam di antara kalimat.")
         rentang = [[round(segs[a][0], 2), round(segs[b][1], 2)] for a, b in hasil]
         dipakai = {i for a, b in hasil for i in range(a, b + 1)}
         dilewati = [segs[i] for i in range(len(segs)) if i not in dipakai]
